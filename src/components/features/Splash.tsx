@@ -29,7 +29,7 @@ export default function Splash() {
   }, [])
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex flex-col items-center justify-start z-50 overflow-y-auto py-12">
+    <section className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex flex-col items-center z-50 overflow-y-auto py-12">
       {/* Teks + Video */}
       <div className="flex items-center gap-6 mb-12">
         <div className="relative h-20 flex items-center justify-center">
