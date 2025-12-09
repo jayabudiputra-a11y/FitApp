@@ -259,7 +259,7 @@ export default function ArticleDetail() {
                               to={`/tag/${tag.toLowerCase()}`} // Pastikan tag dlm lowercase
                               className="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full hover:bg-emerald-200 transition"
                           >
-                              #{tag}
+                              {tag}
                           </Link>
                       ))}
                   </div>
