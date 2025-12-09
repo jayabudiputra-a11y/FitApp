@@ -1,0 +1,9 @@
+{
+  "translation": {
+    "language": "Русский",
+    "selectLanguage": "Выберите язык",
+    "close": "Закрыть",
+    "translation": "Перевод",
+    "poweredBy": "Поддерживается i18next"
+  }
+}

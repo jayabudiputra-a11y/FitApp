@@ -1,98 +1,126 @@
-/* ===============================
-   POWERPOINT STYLE POPUP
-================================*/
+/* ================================================
+   TRANSLATION WIDGET — FIXED TOP RIGHT (SMALL)
+================================================ */
 
-/* Background overlay */
-.pp-overlay {
+.advanced-translate {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  top: 82px;
+  right: 14px;
+  z-index: 5000;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* TOGGLE BUTTON */
+.translate-toggle {
   display: flex;
-  justify-content: center;
   align-items: center;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease forwards;
-  z-index: 999;
-}
-
-/* Popup container */
-.pp-popup {
-  background: white;
-  padding: 2.2rem 2.5rem;
-  border-radius: 20px;
-  text-align: center;
-  width: 340px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
-  animation: ppZoomBounce 0.45s ease forwards;
-}
-
-/* Popup image */
-.pp-img {
-  width: 130px;
-  margin-bottom: 1rem;
-}
-
-/* Text */
-.pp-title {
-  margin: 0 0 0.5rem 0;
-  color: #222;
-}
-
-.pp-text {
-  margin-bottom: 1.3rem;
-  font-size: 0.95rem;
-  color: #444;
-}
-
-/* Close button */
-.pp-btn {
-  background: #222;
-  color: white;
-  padding: 0.6rem 1.4rem;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
-  font-weight: 600;
-  transition: transform 0.15s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  transition: 0.15s ease;
 }
 
-.pp-btn:hover {
-  transform: scale(1.05);
-}
+.translate-toggle .flag { font-size: 16px; }
+.translate-toggle .arrow { font-size: 10px; color: #444; }
 
-/* Button open popup */
-.open-btn {
-  margin-top: 2rem;
-  padding: 0.7rem 1.6rem;
+/* PANEL DROPDOWN */
+.translate-panel.mini {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 220px;
+  background: #fff;
+  padding: 12px;
   border-radius: 10px;
-  border: none;
-  background: #444;
-  color: white;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.20);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeUp .18s ease;
+}
+
+/* HEADER */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-header h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+.close-btn {
+  background: #f3f4f6;
+  padding: 4px 7px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.open-btn:hover {
-  background: #000;
+/* LANGUAGE GRID (2 columns compact) */
+.lang-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
 }
 
-/* === ANIMATIONS === */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.lang-item {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  gap: 6px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  cursor: pointer;
 }
 
-@keyframes ppZoomBounce {
-  0% {
-    transform: scale(0.6) rotateX(18deg);
-    opacity: 0;
+.lang-item:hover {
+  background: #eef2f5;
+}
+
+.lang-item.active {
+  background: #e8fdf3;
+  border-color: #10b981;
+}
+
+.lang-item .flag { font-size: 16px; }
+.check { font-size: 12px; color: #059669; }
+
+/* FOOTER */
+.panel-footer {
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 6px;
+}
+.panel-footer small {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* MOBILE TWEAKS */
+@media (max-width: 520px) {
+  .advanced-translate {
+    top: 72px;
+    right: 10px;
   }
-  55% {
-    transform: scale(1.05) rotateX(0deg);
-    opacity: 1;
+  .translate-panel.mini {
+    width: 185px;
   }
-  100% {
-    transform: scale(1);
+  .lang-item {
+    padding: 5px;
+    font-size: 11px;
   }
+}
+
+/* Anim */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

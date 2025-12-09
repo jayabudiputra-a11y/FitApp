@@ -1,0 +1,10 @@
+{
+  "translation": {
+    "language": "中文",
+    "formatString": "yyyy年MM月dd日",
+    "selectLanguage": "选择语言",
+    "close": "关闭",
+    "translation": "翻译",
+    "poweredBy": "由 i18next 支持"
+  }
+}

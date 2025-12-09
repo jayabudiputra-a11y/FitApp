@@ -7,7 +7,7 @@ import ArticlePage from './pages/ArticlePage'
 import Category from './pages/Category'
 import About from './pages/About'
 import Contact from './pages/Contact'
-import Author from './pages/Author' // ✅ Tambahkan ini
+import Author from './pages/Author'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
         <Route path="category/:slug" element={<Category />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="author" element={<Author />} /> {/* ✅ Tambahkan ini */}
+        <Route path="author" element={<Author />} />
       </Route>
 
       {/* 404 */}

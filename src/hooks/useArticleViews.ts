@@ -1,0 +1,137 @@
+// hooks/useArticleViews.ts
+
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+
+// --- RPC FUNCTION ---
+async function trackPageView(articleId: string) {
+    if (!articleId) {
+        console.warn("Tracking skipped: Article ID is empty or null.");
+        return;
+    }
+    
+    // Debugging RLS context
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log(`DEBUG AUTH: User Session Active? ${!!session}. (RLS check context)`);
+    
+    console.log("DEBUG RPC: Sending Article ID for view increment:", articleId); 
+    
+    const { error } = await supabase.rpc('increment_article_views', {
+        article_id_input: articleId
+    });
+
+    if (error) {
+        if (error.code !== '42P01') {
+            console.error("🔴 TRACKING FAILED - Supabase RPC Error:", { code: error.code, message: error.message });
+        } else {
+            console.warn("RPC increment_article_views is not yet defined in Supabase.");
+        }
+    } else {
+        console.log(`🟢 View Tracked successfully for ID: ${articleId}`);
+    }
+}
+// --------------------
+
+interface ArticleIdentifiers {
+    id: string;
+    slug: string;
+    initialViews?: number; 
+}
+
+export const useArticleViews = (articleIds: ArticleIdentifiers) => {
+    
+    const { id: articleId, initialViews = 0 } = articleIds; 
+    const queryClient = useQueryClient();
+    
+    console.log("DEBUG HOOK: Article ID received from ArticleDetail:", articleId);
+
+    const [liveViewCount, setLiveViewCount] = useState<number>(initialViews);
+
+    useEffect(() => {
+        if (articleId && initialViews !== liveViewCount) {
+            setLiveViewCount(initialViews);
+        }
+    }, [initialViews, articleId, liveViewCount]); 
+
+    // 2. FETCH VIEW COUNT
+    const { data: fetchedViewCount } = useQuery<number>({
+        queryKey: ["viewCount", articleId],
+        queryFn: async () => {
+            if (!articleId) return 0;
+            
+            const { data: countsRow } = await supabase
+                .from("article_view_counts") 
+                .select("total_views")
+                .eq("article_id", articleId)
+                .maybeSingle();
+
+            return countsRow?.total_views ?? 0; 
+        },
+        enabled: !!articleId,
+        placeholderData: initialViews, 
+        refetchInterval: 4000, 
+    });
+
+    useEffect(() => {
+        if (typeof fetchedViewCount === "number" && fetchedViewCount !== liveViewCount) {
+            setLiveViewCount(fetchedViewCount);
+            if (articleId) {
+                queryClient.setQueryData(["viewCount", articleId], fetchedViewCount);
+            }
+        }
+    }, [fetchedViewCount, articleId, queryClient]);
+    
+    // 4. REALTIME SUBSCRIPTION (FIXED: Menggunakan nama channel statis)
+    useEffect(() => {
+        if (!articleId) return;
+        
+        // FIX: Mengganti nama channel dinamis menjadi statis
+        const channel = supabase
+            .channel('article_view_counts_realtime_channel_fix') // Nama statis yang unik
+            .on(
+                "postgres_changes",
+                { 
+                    event: "*", 
+                    schema: "public", 
+                    table: "article_view_counts" 
+                }, 
+                (payload) => {
+                    console.log("DEBUG REALTIME: Received view update payload", payload); 
+                    
+                    const rec = (payload as any).record ?? (payload as any).new;
+                    
+                    // Filter manual tetap diterapkan di frontend
+                    if (rec?.total_views && rec.article_id === articleId) { 
+                        setLiveViewCount(rec.total_views);
+                        queryClient.setQueryData(["viewCount", articleId], rec.total_views);
+                    } else if (rec?.article_id !== articleId) {
+                        console.log(`DEBUG REALTIME: Filtered out update for ID: ${rec.article_id}`);
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log("DEBUG REALTIME: Subscription Status:", status);
+            });
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [articleId, queryClient]);
+
+    // 5. TRACK PAGE VIEW (Effect)
+    const hasTrackedRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!articleId) {
+            console.warn("Tracking skipped: Article ID is empty.");
+            return;
+        }
+        if (hasTrackedRef.current === String(articleId)) return;
+        
+        trackPageView(String(articleId)).catch(() => {}); 
+        
+        hasTrackedRef.current = String(articleId);
+    }, [articleId]);
+
+    return { liveViewCount };
+};

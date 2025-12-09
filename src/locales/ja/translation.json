@@ -1,0 +1,10 @@
+{
+  "translation": {
+    "language": "日本語",
+    "formatString": "yyyy年MM月dd日",
+    "selectLanguage": "言語を選択",
+    "close": "閉じる",
+    "translation": "翻訳",
+    "poweredBy": "i18nextからサポート"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "translation": {
+    "language": "English",
+    "selectLanguage": "Select Language",
+    "close": "Close",
+    "translation": "Translation",
+    "tailwind": "Translation",
+    "poweredBy": "Powered by i18next"
+  }
+}
