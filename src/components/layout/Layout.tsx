@@ -27,25 +27,23 @@ const Layout = () => {
   return (
     <div className="app-layout min-h-screen flex flex-col bg-gray-50">
       <Header />
-
-      {/* Translation widget fixed but non-obstructive */}
+      
       <AdvancedTranslate />
 
       {/* 
-        === REVISI PENUH UNTUK LAYOUT YANG LEBIH RINGKAS ===
+        === VERSI FINAL: KERANGKA LAYOUT YANG KONSISTEN ===
         
-        1. Padding Vertikal (py):
-           - Sebelumnya: pt-10 pb-28 (jarak terlalu besar, 40px & 112px).
-           - Sekarang: py-6 sm:py-8 lg:py-10 (jarak responsif & proporsional).
-           - Efek: Mengurangi tinggi total halaman secara drastis, mengurangi scroll.
+        - `main` bertindak sebagai pembungkus yang fleksibel.
+        - `content-container` di dalamnya adalah "wadah utama" untuk SEMUA halaman.
+        - `max-w-screen-xl`: Memberikan lebar maksimum yang sangat lebar, ideal untuk tampilan "billboard".
+        - `mx-auto`: Selalu memposisikan wadah di tengah layar.
+        - `px-4 sm:px-6 lg:px-8`: Jarak yang aman dan nyaman dari tepi layar di semua perangkat.
         
-        2. Wadah Konten (content-container):
-           - Sebelumnya: <div className="content-container"> (tanpa gaya).
-           - Sekarang: <div className="content-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           - Efek: Konten menjadi terfokus di tengah, tidak terlalu lebar di layar besar, dan memiliki jarak yang nyaman dari tepi layar.
+        Dengan setup ini, setiap komponen yang dirender di <Outlet /> akan
+        secara otomatis berada di dalam wadah yang konsisten ini.
       */}
       <main className="main-content flex-1 py-6 sm:py-8 lg:py-10">
-        <div className="content-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="content-container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <Outlet />
         </div>
       </main>

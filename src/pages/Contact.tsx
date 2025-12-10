@@ -1,5 +1,5 @@
-// src/pages/Contact.tsx
 import Button from "@/components/ui/Button"
+
 import { useState } from "react"
 
 const Contact = () => {
@@ -11,20 +11,25 @@ const Contact = () => {
 
   const emailTarget = "budiputrajaya@outlook.com"
 
-  // Outlook Deep-Link (tanpa mailto)
+
   const buildOutlookUrl = () => {
-    const subject = encodeURIComponent(`Message from ${formData.name}`)
+    const subject = encodeURIComponent("Question from a website visitor: Am I your ideal man?")
+    
     const body = encodeURIComponent(
-      `From: ${formData.name} (${formData.email})\n\n${formData.message}`
+      `Hi Budi,\n\nMy name is ${formData.name} (${formData.email}).\n\n${formData.message}\n\nLooking forward to your reply! 😉`
     )
 
-    return `https://outlook.live.com/owa/?path=/mail/action/compose&to=${emailTarget}&subject=${subject}&body=${body}`
+    return `https://outlook.live.com/mail/0/deeplink/compose?to=${emailTarget}&subject=${subject}&body=${body}`
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Open Outlook Web Compose
+    if (!formData.name || !formData.email || !formData.message) {
+      alert("Please fill in all fields.")
+      return
+    }
+
     window.open(buildOutlookUrl(), "_blank")
   }
 
@@ -39,9 +44,9 @@ const Contact = () => {
 
   return (
     <div className="max-w-2xl mx-auto py-12">
-      <h1 className="text-4xl font-bold mb-8">Contact me</h1>
+      <h1 className="text-4xl font-bold mb-8">Contact Me</h1>
 
-      {/* INFO BOX */}
+
       <div className="p-5 mb-8 bg-emerald-50 border border-emerald-200 rounded-xl">
         <p className="text-lg">
           Or send directly to:
@@ -51,15 +56,16 @@ const Contact = () => {
         </p>
 
         <a
-          href={`https://outlook.live.com/owa/?path=/mail/action/compose&to=${emailTarget}`}
+          href={`https://outlook.live.com/mail/0/deeplink/compose?to=${emailTarget}`}
           target="_blank"
-          className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          rel="noopener noreferrer"
+          className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Open Outlook Compose
         </a>
       </div>
 
-      {/* FORM */}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <input
           name="name"

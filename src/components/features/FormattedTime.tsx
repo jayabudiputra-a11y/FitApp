@@ -1,8 +1,8 @@
-// src/components/FormattedDate.tsx
+// src/components/features/FormattedTime.tsx
 import { format } from 'date-fns';
-import { enUS, type Locale } from 'date-fns/locale'; 
+import { enUS, type Locale } from 'date-fns/locale';
 
-interface FormattedDateProps {
+interface FormattedTimeProps {
   dateString: string | Date | number | null | undefined;
   formatString?: string;
   locale?: Locale;
@@ -11,16 +11,16 @@ interface FormattedDateProps {
   variant?: 'default' | 'card' | 'detail' | 'meta';
 }
 
-const FormattedDate: React.FC<FormattedDateProps> = ({ 
+const FormattedTime: React.FC<FormattedTimeProps> = ({ 
   dateString, 
-  formatString = "  MMMM d yyyy  ", 
+  formatString = "h a",
   locale = enUS,
-  fallback = "Date not available",
+  fallback = "Time not available",
   className = "",
   variant = "default"
 }) => {
 
-  if (!dateString) {
+    if (!dateString) {
     return <span className={className}>{fallback}</span>;
   }
 
@@ -31,11 +31,9 @@ const FormattedDate: React.FC<FormattedDateProps> = ({
     if (dateString instanceof Date) {
       date = dateString;
     } else if (typeof dateString === 'string') {
-
       if (dateString.includes('T') || dateString.includes('+') || dateString.includes('Z')) {
         date = new Date(dateString);
       } else {
-
         date = new Date(dateString);
       }
     } else if (typeof dateString === 'number') {
@@ -44,24 +42,14 @@ const FormattedDate: React.FC<FormattedDateProps> = ({
       date = new Date(dateString);
     }
 
-
+    // Validate date
     if (isNaN(date.getTime())) {
-      console.error('❌ Invalid date:', dateString);
+      console.error('❌ Invalid date for time formatting:', dateString);
       return <span className={className}>{fallback}</span>;
     }
 
-
-    const formattedDate = format(date, formatString, { locale });
-    
-
-    if (import.meta.env.DEV) {
-      console.log('📅 Date Debug:', {
-        input: dateString,
-        parsed: date,
-        formatted: formattedDate,
-        variant
-      });
-    }
+    // Format the time
+    const formattedTime = format(date, formatString, { locale });
     
     // Apply variant-specific classes
     const variantClasses = {
@@ -73,11 +61,11 @@ const FormattedDate: React.FC<FormattedDateProps> = ({
     
     const finalClassName = `${variantClasses[variant]} ${className}`.trim();
     
-    return <span className={finalClassName}>{formattedDate}</span>;
+    return <span className={finalClassName}>{formattedTime}</span>;
   } catch (error) {
-    console.error('❌ Date formatting error:', error, 'for date:', dateString);
+    console.error('❌ Time formatting error:', error, 'for date:', dateString);
     return <span className={className}>{fallback}</span>;
   }
 };
 
-export default FormattedDate;
+export default FormattedTime;

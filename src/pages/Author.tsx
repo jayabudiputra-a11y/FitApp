@@ -1,5 +1,9 @@
+// D:\projects\fitapp-2025\src\pages\Author.tsx
+
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import FormattedDate from '@/components/features/FormattedDate' 
+import FormattedTime from '@/components/features/FormattedTime' 
 
 const Author = () => {
   const { data: author, isLoading, error } = useQuery({
@@ -42,21 +46,27 @@ const Author = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16 space-y-8">
-      <h1 className="text-5xl font-bold text-center mb-6 text-emerald-600">
+    // Wrapper Utama: max-w-2xl untuk ringkas, mx-auto untuk pusatkan.
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-8 text-center"> 
+      
+      {/* Nama Penulis */}
+      <h1 className="text-5xl font-bold mb-6 text-emerald-600">
         {author.name}
       </h1>
 
-      <p className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+      {/* Bio Penulis */}
+      <p className="text-lg text-gray-700 leading-relaxed whitespace-pre-line mx-auto">
         {author.bio}
       </p>
 
+      {/* Tautan Gallery dan Linktree */}
+      {/* Menggunakan justify-center untuk memastikan tautan ada di tengah */}
       <div className="flex justify-center space-x-6 mt-8">
         <a
           href={author.flickr_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-emerald-600 font-semibold hover:underline"
+          className="text-emerald-600 text-2xl font-semibold hover:underline flex items-center gap-2"
         >
           📸 Gallery
         </a>
@@ -64,14 +74,22 @@ const Author = () => {
           href={author.linktree_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-emerald-600 font-semibold hover:underline"
+          className="text-emerald-600 text-2xl font-semibold hover:underline flex items-center gap-2"
         >
           🔗 Linktree
         </a>
       </div>
 
-      <div className="text-center text-sm text-gray-500 mt-12">
-        Created at: {new Date(author.created_at).toLocaleString()}
+      {/* Created At */}
+      <div className="text-sm text-gray-500 mt-12">
+        Created at: 
+        <FormattedDate 
+            dateString={ author.created_at } 
+        />
+        &nbsp;
+        <FormattedTime 
+            dateString={ author.created_at } 
+        />
       </div>
     </div>
   )

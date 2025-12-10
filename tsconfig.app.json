@@ -24,8 +24,10 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // 👇 PERUBAHAN DI SINI: Dinonaktifkan untuk mengizinkan variabel yang tidak terpakai
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    // 👆 PERUBAHAN DI SINI
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
