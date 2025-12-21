@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 /* =========================
    Article & Content
 ========================= */
@@ -57,6 +59,12 @@ export interface SignUpData {
   email: string;
   password: string;
   name: string;
+}
+
+// --- TAMBAHKAN INTERFACE INI ---
+export interface AuthPageLayoutProps {
+  children: React.ReactNode;
+  title: string;
 }
 
 /* =========================
