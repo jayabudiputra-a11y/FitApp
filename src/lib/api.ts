@@ -1,4 +1,3 @@
-// src/lib/api.ts
 import { supabase } from "./supabase";
 import type {
   Article,
@@ -33,10 +32,7 @@ export const articlesApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      handleSupabaseError(
-        error,
-        "articlesApi.getAll"
-      );
+      handleSupabaseError(error, "articlesApi.getAll");
     }
 
     return data ?? [];
@@ -52,28 +48,15 @@ export const articlesApi = {
       .single();
 
     if (error || !data) {
-      handleSupabaseError(
-        error,
-        "articlesApi.getBySlug"
-      );
+      handleSupabaseError(error, "articlesApi.getBySlug");
     }
 
-    /**
-     * 🔥 FIRE & FORGET RPC
-     * (TS-safe, tanpa .catch)
-     */
+    // RPC Fire & Forget untuk hitungan view
     void (async () => {
-      const { error } = await supabase.rpc(
-        "increment_views",
-        { article_id: data.id }
-      );
-
-      if (error) {
-        console.warn(
-          "increment_views skipped:",
-          error.message
-        );
-      }
+      const { error } = await supabase.rpc("increment_views", { 
+        article_id: data.id 
+      });
+      if (error) console.warn("increment_views skipped:", error.message);
     })();
 
     return data;
@@ -81,13 +64,12 @@ export const articlesApi = {
 };
 
 /* =====================================================
-   SUBSCRIBERS (ANON SAFE – INSERT ONLY)
+   SUBSCRIBERS
 ===================================================== */
 export const subscribersApi = {
   /**
-   * ✔ Aman untuk anon / publishable key
-   * ✔ Hanya butuh policy INSERT
-   * ✔ Tidak trigger SELECT / UPDATE
+   * Menambah user ke tabel subscribers.
+   * Dipanggil saat subscribe dan saat login.
    */
   insertIfNotExists: async (
     email: string,
@@ -105,16 +87,10 @@ export const subscribersApi = {
         }, { onConflict: 'email' });
 
       if (error) {
-        console.warn(
-          "subscribersApi.upsert error:",
-          error.message
-        );
+        console.warn("subscribersApi.upsert error:", error.message);
       }
     } catch (error) {
-      console.warn(
-        "subscribersApi.upsert error:",
-        error
-      );
+      console.warn("subscribersApi.upsert error:", error);
     }
   },
 };
@@ -123,11 +99,6 @@ export const subscribersApi = {
    AUTH
 ===================================================== */
 export const authApi = {
-  /**
-   * SIGN UP
-   * - full_name harus match trigger
-   * - emailRedirectTo → /auth/callback
-   */
   signUp: async ({
     email,
     password,
@@ -137,54 +108,39 @@ export const authApi = {
       throw new Error("Name is required");
     }
 
-    const { data, error } =
-      await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name.trim(),
-          },
-          emailRedirectTo:
-            "https://fit-app-eight.vercel.app/auth/callback",
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name.trim(),
+          // Kita simpan avatar kosong agar di-handle trigger DB
+          avatar_url: null,
         },
-      });
+        // Redirect ke AuthCallback React Component (bukan Edge Function)
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
     if (error) {
-      handleSupabaseError(
-        error,
-        "authApi.signUp"
-      );
+      handleSupabaseError(error, "authApi.signUp");
     }
 
-    /**
-     * 🔁 NON-BLOCKING
-     */
     if (data.user?.email) {
-      void subscribersApi.insertIfNotExists(
-        data.user.email,
-        name.trim()
-      );
+      void subscribersApi.insertIfNotExists(data.user.email, name.trim());
     }
 
     return data;
   },
 
-  signIn: async (
-    email: string,
-    password: string
-  ) => {
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  signIn: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
-      handleSupabaseError(
-        error,
-        "authApi.signIn"
-      );
+      handleSupabaseError(error, "authApi.signIn");
     }
 
     if (data.user?.email) {
@@ -198,38 +154,33 @@ export const authApi = {
   },
 
   signOut: async () => {
-    const { error } =
-      await supabase.auth.signOut();
-
+    const { error } = await supabase.auth.signOut();
     if (error) {
-      handleSupabaseError(
-        error,
-        "authApi.signOut"
-      );
+      handleSupabaseError(error, "authApi.signOut");
     }
   },
 
   getCurrentUser: async (): Promise<AuthUser | null> => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { data: { user } } = await supabase.auth.getUser();
     return (user as AuthUser) ?? null;
   },
 };
 
 /* =====================================================
-   COMMENTS
+   COMMENTS (MENGGUNAKAN RPC UNTUK KEAMANAN)
 ===================================================== */
 export const commentsApi = {
+  /**
+   * Menggunakan RPC 'get_comments_with_users'.
+   * Ini join tabel 'comments' dan 'user_profiles' secara manual untuk menghindari error 403.
+   */
   getCommentsByArticle: async (
     articleId: string
   ): Promise<CommentWithUser[]> => {
-    const { data, error } =
-      await supabase.rpc(
-        "get_comments_with_users",
-        { p_article_id: articleId }
-      );
+    const { data, error } = await supabase.rpc(
+      "get_comments_with_users",
+      { p_article_id: articleId }
+    );
 
     if (error) {
       handleSupabaseError(
@@ -241,18 +192,11 @@ export const commentsApi = {
     return data ?? [];
   },
 
-  addComment: async (
-    articleId: string,
-    content: string
-  ) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  addComment: async (articleId: string, content: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error(
-        "You must be logged in to comment"
-      );
+      throw new Error("You must be logged in to comment");
     }
 
     const { error } = await supabase
@@ -264,10 +208,7 @@ export const commentsApi = {
       });
 
     if (error) {
-      handleSupabaseError(
-        error,
-        "commentsApi.addComment"
-      );
+      handleSupabaseError(error, "commentsApi.addComment");
     }
   },
 };

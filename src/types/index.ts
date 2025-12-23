@@ -44,6 +44,14 @@ export interface Subscriber {
 }
 
 /* =========================
+   Profile
+========================= */
+export interface UserProfile {
+  username: string;
+  avatar_url: string | null;
+}
+
+/* =========================
    User & Auth
 ========================= */
 export interface AuthUser {
@@ -51,6 +59,7 @@ export interface AuthUser {
   email?: string;
   user_metadata?: {
     name?: string;
+    full_name?: string;
     avatar_url?: string;
   };
 }
@@ -61,7 +70,6 @@ export interface SignUpData {
   name: string;
 }
 
-// --- TAMBAHKAN INTERFACE INI ---
 export interface AuthPageLayoutProps {
   children: React.ReactNode;
   title: string;

@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import logo from '@/assets/masculine-logo.svg'
 import MobileMenu from './MobileMenu'
 import Navigation from './Navigation'
+import { useAuth } from '@/hooks/useAuth' // Import useAuth
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { user } = useAuth() // Get user state
 
   const toggleMenu = () => setIsOpen(!isOpen)
   const closeMenu = () => setIsOpen(false)
@@ -13,7 +15,7 @@ export default function Header() {
   return (
     <header className="relative overflow-hidden border-b border-gray-200 bg-white">
       
-      {/* rainbow bar */}
+      {/* Rainbow bar */}
       <div className="absolute inset-x-0 top-0 h-1 flex">
         <div className="flex-1 bg-red-500" />
         <div className="flex-1 bg-orange-500" />
@@ -46,9 +48,21 @@ export default function Header() {
             ☰
           </button>
 
-          {/* DESKTOP NAV */}
-          <div className="hidden md:flex">
+          {/* NAVIGATION AREA */}
+          <div className="hidden md:flex items-center space-x-8">
+            
+            {/* Main Menu (Home, Articles, Subscribe) */}
             <Navigation />
+
+            {/* Profile Link (Only if logged in) */}
+            {user ? (
+              <Link 
+                to="/profile" 
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Profile
+              </Link>
+            ) : null}
           </div>
         </div>
 

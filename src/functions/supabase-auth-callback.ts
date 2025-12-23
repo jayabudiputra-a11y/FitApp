@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * =====================================================
- * ENV (SESUAI .env.local)
+ * ENV
  * =====================================================
  */
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -14,17 +14,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-/**
- * =====================================================
- * SUPABASE CLIENT (ANON)
- * =====================================================
- */
 const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey,
   {
     auth: {
-      persistSession: false, // server-side, tidak perlu simpan session
+      persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
     },
@@ -33,7 +28,7 @@ const supabase = createClient(
 
 /**
  * =====================================================
- * AUTH CALLBACK HANDLER
+ * HANDLER
  * =====================================================
  */
 export default async function handler(req: Request): Promise<Response> {
@@ -45,78 +40,57 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { data, error } =
-      await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error || !data.session) {
-      return new Response(
-        JSON.stringify({
-          error: error?.message ?? "Authentication failed",
-        }),
-        { status: 401 }
-      );
+      return new Response(JSON.stringify({ error: "Authentication failed" }), { status: 401 });
     }
 
-    /**
-     * =====================================================
-     * INSERT SUBSCRIBER (ANON + RLS)
-     * =====================================================
-     */
+    // 1. INSERT TO SUBSCRIBERS
     if (data.user?.email) {
-      const { error: insertError } = await supabase
+      const { error: subError } = await supabase
         .from("subscribers")
-        .upsert(
-          {
-            email: data.user.email,
-            name:
-              data.user.user_metadata?.full_name ??
-              "Anonymous",
-            is_active: true,
-          },
-          {
-            onConflict: "email",
-          }
-        );
+        .upsert({
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name ?? "Anonymous",
+          is_active: true,
+        }, { onConflict: "email" });
 
-      if (insertError) {
-        console.warn(
-          "Subscriber upsert skipped:",
-          insertError.message
-        );
-      }
+      if (subError) console.warn("Subscriber upsert skipped:", subError.message);
     }
 
-    /**
-     * =====================================================
-     * SET COOKIE & REDIRECT
-     * =====================================================
-     */
-    const { access_token, refresh_token, expires_in } =
-      data.session;
+    // 2. ENSURE USER_PROFILES EXISTS (Inisialisasi Username)
+    // Ini memastikan user_profiles row terbentuk dengan default username
+    if (data.user?.id) {
+      const generatedUsername = 'user_' + data.user.id.substring(0, 8);
+      
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .upsert({
+          id: data.user.id,
+          username: generatedUsername,
+          avatar_url: data.user.user_metadata?.avatar_url ?? null,
+        }, { onConflict: "id" });
+
+      if (profileError) console.warn("Profile upsert skipped:", profileError.message);
+    }
+
+    // 3. REDIRECT
+    const headers = new Headers();
+    const { access_token, refresh_token, expires_in } = data.session;
 
     const expirationTime = new Date();
-    expirationTime.setSeconds(
-      expirationTime.getSeconds() + expires_in
-    );
-
-    const headers = new Headers();
+    expirationTime.setSeconds(expirationTime.getSeconds() + expires_in);
 
     headers.append(
       "Set-Cookie",
       `supabase-access-token=${access_token}; Path=/; Expires=${expirationTime.toUTCString()}; HttpOnly; Secure; SameSite=Lax`
     );
+    
+    // Redirect ke halaman artikel atau dashboard
+    headers.set("Location", "/articles"); 
 
-    headers.append(
-      "Set-Cookie",
-      `supabase-refresh-token=${refresh_token}; Path=/; Expires=${expirationTime.toUTCString()}; HttpOnly; Secure; SameSite=Lax`
-    );
-
-    headers.set("Location", "/dashboard");
-
-    return new Response(null, {
-      status: 302,
-      headers,
-    });
+    return new Response(null, { status: 302, headers });
   } catch (err) {
     console.error("Auth callback error:", err);
     return new Response("Server Error", { status: 500 });

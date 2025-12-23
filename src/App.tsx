@@ -12,6 +12,7 @@ import Author from '@/pages/Author'
 import NotFound from '@/pages/NotFound'
 
 import Subscription from '@/pages/Subscription'
+import Profile from '@/pages/Profile' // Import halaman Profile
 
 import SignUpForm from '@/components/SignUpForm'
 import SignInForm from '@/components/common/SignInForms'
@@ -47,8 +48,8 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="articles" element={<Articles />} />
-          {/* Tambahkan route Subscription di sini */}
           <Route path="subscribe" element={<Subscription />} />
+          <Route path="profile" element={<Profile />} /> {/* Tambahkan rute Profile di sini */}
           
           <Route path="article/:slug" element={<ArticlePage />} />
           <Route path="category/:slug" element={<Category />} />
