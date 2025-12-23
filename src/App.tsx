@@ -11,6 +11,8 @@ import Contact from '@/pages/Contact'
 import Author from '@/pages/Author'
 import NotFound from '@/pages/NotFound'
 
+import Subscription from '@/pages/Subscription'
+
 import SignUpForm from '@/components/SignUpForm'
 import SignInForm from '@/components/common/SignInForms'
 import IframeA11yFixer from '@/components/common/IframeA11yFixer'
@@ -45,6 +47,9 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="articles" element={<Articles />} />
+          {/* Tambahkan route Subscription di sini */}
+          <Route path="subscribe" element={<Subscription />} />
+          
           <Route path="article/:slug" element={<ArticlePage />} />
           <Route path="category/:slug" element={<Category />} />
           <Route path="about" element={<About />} />

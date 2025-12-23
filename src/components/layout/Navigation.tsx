@@ -1,14 +1,5 @@
-
 import { NavLink } from 'react-router-dom'
-
-const navItems = [
-  { to: '/', label: 'Home' },
-  { to: '/articles', label: 'Articles' },
-  { to: '/category/fitness', label: 'Fitness' },
-  { to: '/category/lgbtq', label: 'LGBTQ+' },
-  { to: '/category/admiration', label: 'Admiration' },
-  { to: '/category/mindset', label: 'Mindset' },
-]
+import { navItems } from '@/config/navItems' // Import dari config
 
 const Navigation = () => {
   return (
