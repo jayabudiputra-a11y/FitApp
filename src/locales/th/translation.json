@@ -3,7 +3,15 @@
     "language": "ไทย",
     "selectLanguage": "เลือกภาษา",
     "close": "ปิด",
-    "translation": "แปลภาษา",
-    "poweredBy": "สนับสนุนโดย i18next"
+    "translation": "การแปล",
+    "poweredBy": "ขับเคลื่อนโดย i18next",
+    "loading....babe": "กำลังโหลด....babe",
+    "back": "กลับสู่หน้าแรก",
+    "Article not found or article data is incomplete.": "ไม่พบบทความหรือข้อมูลบทความไม่สมบูรณ์",
+    "Author": "ผู้เขียน",
+    "Tags": "แท็ก",
+    "Scroll to top": "เลื่อนขึ้นด้านบน",
+    "Gallery": "แกลเลอรี",
+    "More Photos": "รูปภาพเพิ่มเติม"
   }
 }

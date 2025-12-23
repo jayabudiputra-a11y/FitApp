@@ -2,8 +2,16 @@
   "translation": {
     "language": "العربية",
     "selectLanguage": "اختر اللغة",
-    "close": "إغلق",
+    "close": "إغلاق",
     "translation": "ترجمة",
-    "poweredBy": "مدعوم من قبل i18next"
+    "poweredBy": "مدعوم بواسطة i18next",
+    "loading....babe": "جاري التحميل...",
+    "back": "العودة إلى الرئيسية",
+    "Article not found or article data is incomplete.": "المقال غير موجود أو بيانات المقال غير مكتملة.",
+    "Author": "المؤلف",
+    "Tags": "الوسوم",
+    "Scroll to top": "التمرير للأعلى",
+    "Gallery": "معرض الصور",
+    "More Photos": "المزيد من الصور"
   }
 }

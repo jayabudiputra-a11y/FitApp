@@ -4,6 +4,14 @@
     "selectLanguage": "Sprache auswählen",
     "close": "Schließen",
     "translation": "Übersetzung",
-    "poweredBy": "Unterstützt von i18next"
+    "poweredBy": "Bereitgestellt von i18next",
+    "loading....babe": "Laden....babe",
+    "back": "Zurück zur Startseite",
+    "Article not found or article data is incomplete.": "Artikel nicht gefunden oder Artikeldaten sind unvollständig.",
+    "Author": "Autor",
+    "Tags": "Tags",
+    "Scroll to top": "Nach oben scrollen",
+    "Gallery": "Galerie",
+    "More Photos": "Weitere Fotos"
   }
 }
