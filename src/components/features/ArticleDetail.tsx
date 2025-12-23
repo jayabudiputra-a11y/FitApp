@@ -1,3 +1,5 @@
+// D:\projects\fitapp-2025\src\components\features\ArticleDetail.tsx
+
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -79,6 +81,12 @@ export default function ArticleDetail() {
     midGallery: midGalleryString,
     bottomGallery: bottomGalleryString,
   } = processedData;
+
+  // --- PERUBAHAN: Tentukan posisi mid-gallery secara dinamis ---
+  // Cari posisi paragraf tengah untuk menyisipkan gallery.
+  // Jika artikel memiliki kurang dari 3 paragraf, letakkan di tengah.
+  // Jika lebih, letakkan setelah paragraf ketiga (indeks 2).
+  const midGalleryInsertionIndex = paragraphs.length > 2 ? 2 : Math.floor(paragraphs.length / 2);
 
   return (
     <>
@@ -171,10 +179,11 @@ export default function ArticleDetail() {
                       dangerouslySetInnerHTML={{ __html: processedLine }}
                     />
 
-                    {originalIndex === 2 && (
+                    {/* --- PERUBAHAN: Gunakan indeks dinamis untuk mid-gallery --- */}
+                    {originalIndex === midGalleryInsertionIndex && midGalleryString && (
                       <ArticleImageGallery
                         images={midGalleryString}
-                        title="Gallery"
+                        title={t("Gallery")} // PERUBAHAN: Gunakan terjemahan
                         slug={slugValue}
                         containerClassName="my-10 -mx-6 px-6"
                         downloadPrefix="mid"
@@ -187,13 +196,16 @@ export default function ArticleDetail() {
             </div>
           </div>
 
-          <ArticleImageGallery
-            images={bottomGalleryString}
-            title="More Photos"
-            slug={slugValue}
-            downloadPrefix="bottom"
-            startIndex={7}
-          />
+          {/* --- PERUBAHAN: Tampilkan bottom-gallery hanya jika datanya ada --- */}
+          {bottomGalleryString && (
+            <ArticleImageGallery
+              images={bottomGalleryString}
+              title={t("More Photos")} // PERUBAHAN: Gunakan terjemahan
+              slug={slugValue}
+              downloadPrefix="bottom"
+              startIndex={7}
+            />
+          )}
 
           <div className="px-6 pb-6 pt-4 border-t border-gray-100">
             <div className="flex flex-wrap gap-2 text-xs">
