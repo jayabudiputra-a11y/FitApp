@@ -10,9 +10,11 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+
       VitePWA({
-        registerType: "autoUpdate",
-        injectRegister: "auto",
+        filename: "sw.js",
+        manifestFilename: "manifest.webmanifest",
+
         manifest: {
           name: "Fitapp",
           short_name: "Fitapp",
@@ -21,6 +23,7 @@ export default defineConfig(({ mode }) => {
           background_color: "#ffffff",
           display: "standalone",
           orientation: "portrait-primary",
+          start_url: "/",
           icons: [
             {
               src: "/masculine-logo.svg",
@@ -30,27 +33,28 @@ export default defineConfig(({ mode }) => {
             }
           ]
         },
-        // Simplified workbox configuration
+
         workbox: {
+          cleanupOutdatedCaches: true,
+          navigateFallback: "/index.html",
+
           runtimeCaching: [
             {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+              urlPattern: /\.(png|jpg|jpeg|svg|gif|webp)$/i,
               handler: "CacheFirst",
               options: {
                 cacheName: "images",
                 expiration: {
                   maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                  maxAgeSeconds: 60 * 60 * 24 * 7
                 }
               }
             },
-            // Simplified Supabase caching
             {
-              urlPattern: ({ url }) => {
-                return url.href.startsWith(SUPABASE_URL) && 
-                       !url.pathname.includes("/auth/") &&
-                       !url.pathname.includes("/storage/");
-              },
+              urlPattern: ({ url }) =>
+                url.href.startsWith(SUPABASE_URL) &&
+                !url.pathname.includes("/auth/") &&
+                !url.pathname.includes("/storage/"),
               handler: "NetworkFirst",
               options: {
                 cacheName: "supabase-api",
@@ -68,50 +72,9 @@ export default defineConfig(({ mode }) => {
       }
     },
 
-    server: {
-      port: 5173,
-      open: true,
-      host: true,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'X-Content-Type-Options': 'nosniff',
-        // CSP lengkap yang Anda berikan
-        'Content-Security-Policy': "default-src 'self' https://zlwhvkexgjisyhakxyoe.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://zlwhvkexgjisyhakxyoe.supabase.co; style-src 'self' 'unsafe-inline' https://zlwhvkexgjisyhakxyoe.supabase.co; img-src 'self' data: https://zlwhvkexgjisyhakxyoe.supabase.co; media-src 'self' https://zlwhvkexgjisyhakxyoe.supabase.co; connect-src 'self' https://zlwhvkexgjisyhakxyoe.supabase.co https://fit-app-rime.vercel.app *.map;"
-      }
-    },
-
     build: {
       outDir: "dist",
-      sourcemap: true, // Kembalikan sourcemap karena CSP sudah mencakup *.map
-      rollupOptions: {
-        output: {
-          entryFileNames: `assets/[name]-[hash].js`,
-          chunkFileNames: `assets/[name]-[hash].js`,
-          assetFileNames: `assets/[name]-[hash].[ext]`,
-          
-          manualChunks: id => {
-            if (id.includes("node_modules")) {
-              if (
-                id.includes("react") ||
-                id.includes("react-dom") ||
-                id.includes("react-router")
-              ) {
-                return "vendor";
-              }
-              if (id.includes("lucide") || id.includes("framer-motion")) {
-                return "ui";
-              }
-            }
-          }
-        }
-      }
-    },
-
-    preview: {
-      port: 4173,
-      strictPort: true,
+      sourcemap: true
     }
   };
 });
