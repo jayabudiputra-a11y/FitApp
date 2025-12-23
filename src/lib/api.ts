@@ -95,22 +95,25 @@ export const subscribersApi = {
   ): Promise<void> => {
     if (!email) return;
 
-    const { error } = await supabase
-      .from("subscribers")
-      .insert({
-        email,
-        name: name ?? null,
-        is_active: true,
-      });
+    try {
+      const { error } = await supabase
+        .from("subscribers")
+        .upsert({
+          email,
+          name: name ?? null,
+          is_active: true,
+        }, { onConflict: 'email' });
 
-    /**
-     * ❗ Jangan throw
-     * ❗ Subscriber bukan critical path
-     */
-    if (error) {
+      if (error) {
+        console.warn(
+          "subscribersApi.upsert error:",
+          error.message
+        );
+      }
+    } catch (error) {
       console.warn(
-        "subscribersApi.insert skipped:",
-        error.message
+        "subscribersApi.upsert error:",
+        error
       );
     }
   },
@@ -143,7 +146,7 @@ export const authApi = {
             full_name: name.trim(),
           },
           emailRedirectTo:
-            "http://localhost:5173/auth/callback",
+            "https://fit-app-rime.vercel.app/auth/callback",
         },
       });
 
