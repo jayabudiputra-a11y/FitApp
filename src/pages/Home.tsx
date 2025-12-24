@@ -21,38 +21,72 @@ const Home = () => {
       <section
         className="
           relative
-          py-20
+          py-24
           text-center
           overflow-hidden
+
           bg-gradient-to-br
-          from-pink-600/20
-          via-purple-600/20
-          to-emerald-500/20
-          dark:from-pink-500/10
-          dark:via-purple-500/10
-          dark:to-emerald-400/10
+          from-red-400
+          via-yellow-300
+          via-emerald-400
+          via-sky-400
+          to-purple-500
+
+          dark:from-red-500
+          dark:via-yellow-400
+          dark:via-emerald-500
+          dark:via-sky-500
+          dark:to-purple-600
         "
       >
-        {/* Glow overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40 pointer-events-none" />
+        {/* Contrast overlay */}
+        <div
+          className="
+            absolute inset-0 pointer-events-none
+            bg-gradient-to-t
+            from-white/60 via-transparent to-white/40
+            dark:from-black/60 dark:to-black/50
+          "
+        />
 
         <div className="relative max-w-5xl mx-auto flex justify-center items-center gap-0">
+          {/* LEFT GIF */}
           <img
             src={leftGif}
             alt="Fitapp Left Decoration"
-            className="w-1/4 h-auto hidden md:block opacity-90"
+            className="
+              w-1/4 h-auto hidden md:block
+              saturate-150
+              contrast-110
+              brightness-105
+            "
           />
 
+          {/* CENTER GIF */}
           <img
             src={centralGif}
             alt="Fitapp Main Inspiration GIF"
-            className="w-1/2 h-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.25)]"
+            className="
+              w-1/2 h-auto
+              saturate-150
+              contrast-115
+              brightness-105
+
+              drop-shadow-[0_0_50px_rgba(255,255,255,0.7)]
+              dark:drop-shadow-[0_0_45px_rgba(255,255,255,0.35)]
+            "
           />
 
+          {/* RIGHT GIF */}
           <img
             src={rightGif}
             alt="Fitapp Right Decoration"
-            className="w-1/4 h-auto hidden md:block opacity-90"
+            className="
+              w-1/4 h-auto hidden md:block
+              saturate-150
+              contrast-110
+              brightness-105
+            "
           />
         </div>
       </section>
@@ -60,47 +94,55 @@ const Home = () => {
       {/* =========================
           LATEST INSPIRATION
       ========================== */}
-      <section className="py-20 relative">
-        {/* Soft rainbow background */}
+      <section className="py-24 relative">
+        {/* Ambient rainbow — NEVER pudar */}
         <div
           className="
-            absolute inset-0
+            absolute inset-0 pointer-events-none
             bg-gradient-to-b
             from-transparent
-            via-pink-500/5
+            via-emerald-300/30
+            via-sky-300/30
+            via-purple-400/30
             to-transparent
-            dark:via-purple-500/5
-            pointer-events-none
+            dark:via-purple-500/20
           "
         />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* PRIDE MUSTACHE GIF */}
-          <div className="flex justify-center mb-4">
+          {/* PRIDE GIF */}
+          <div className="flex justify-center mb-6">
             <img
               src={prideMustache}
               alt="Pride Mustache"
-              className="h-16 w-auto"
+              className="
+                h-16 w-auto
+                saturate-150
+                drop-shadow-[0_0_16px_rgba(255,255,255,0.6)]
+              "
             />
           </div>
 
-          {/* GRADIENT TITLE */}
+          {/* TITLE — PURE RAINBOW */}
           <h2
             className="
-              text-4xl sm:text-5xl font-extrabold text-center mb-8
+              text-4xl sm:text-5xl font-extrabold text-center mb-12
+
               bg-gradient-to-r
               from-red-500
               via-yellow-400
-              via-green-400
-              via-blue-500
-              to-purple-600
+              via-emerald-400
+              via-sky-400
+              to-purple-500
+
               bg-clip-text text-transparent
+              drop-shadow-[0_0_16px_rgba(255,255,255,0.55)]
             "
           >
             Latest Inspiration
           </h2>
 
-          <div className="max-w-xl mx-auto mb-12">
+          <div className="max-w-xl mx-auto mb-16">
             <SearchBar onSearch={handleSearch} />
           </div>
 

@@ -17,12 +17,11 @@ export default function Header() {
     <header
       className="
         relative overflow-hidden
-        border-b border-gray-200 dark:border-gray-700
-        bg-white dark:bg-gray-900
-        transition-colors
+        border-b-4 border-[#800000]
+        bg-gradient-to-r from-yellow-300 to-yellow-400
       "
     >
-      {/* Rainbow bar */}
+      {/* Rainbow top bar */}
       <div className="absolute inset-x-0 top-0 h-1 flex">
         <div className="flex-1 bg-red-500" />
         <div className="flex-1 bg-orange-500" />
@@ -36,30 +35,32 @@ export default function Header() {
         <div className="flex items-center justify-between">
 
           {/* LOGO */}
-          <Link to="/" className="flex items-center space-x-3 group">
+          <Link to="/" className="flex items-center space-x-3">
             <img src={logo} alt="Fitapp Logo" className="h-8 w-8" />
             <div>
-              <h1 className="text-3xl font-bold text-emerald-600">Fitapp</h1>
-              <p className="text-xs text-gray-600 dark:text-gray-400 tracking-wider">
+              <h1 className="text-3xl font-extrabold text-[#800000]">
+                Fitapp
+              </h1>
+              <p className="text-xs text-[#800000]/70 tracking-wider">
                 LGBTQ+ • Muscle Worship • Kings Only
               </p>
             </div>
           </Link>
 
           {/* RIGHT AREA */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {/* DESKTOP NAV */}
             <div className="hidden md:block">
               <Navigation />
             </div>
 
-            {/* THEME TOGGLE */}
+            {/* THEME TOGGLE (tetap boleh ada, tapi tidak ngaruh warna) */}
             <ThemeToggle />
 
             {/* MOBILE BUTTON */}
             <button
               onClick={toggleMenu}
-              className="md:hidden text-gray-600 dark:text-gray-300 hover:text-emerald-600"
+              className="md:hidden text-[#800000] text-2xl font-bold"
               aria-label="Toggle navigation"
             >
               ☰

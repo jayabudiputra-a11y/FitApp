@@ -3,6 +3,19 @@ import { supabase } from '@/lib/supabase'
 
 type Theme = 'light' | 'dark'
 
+const GUEST_ID_KEY = 'fitapp_guest_id'
+
+// Helper untuk generate ID unik jika browser mendukungnya
+const getGuestId = () => {
+  let guestId = localStorage.getItem(GUEST_ID_KEY)
+  if (!guestId) {
+    // Generate UUID sederhana
+    guestId = crypto.randomUUID()
+    localStorage.setItem(GUEST_ID_KEY, guestId)
+  }
+  return guestId
+}
+
 export const useThemePreference = () => {
   const [theme, setTheme] = useState<Theme>('light')
   const [userId, setUserId] = useState<string | null>(null)
@@ -14,21 +27,30 @@ export const useThemePreference = () => {
         data: { session },
       } = await supabase.auth.getSession()
 
-      const uid = session?.user?.id ?? null
-      setUserId(uid)
+      // Jika login, pakai ID user. Jika belum, pakai Guest ID
+      let identifier: string | null = session?.user?.id ?? null
+      
+      if (!identifier) {
+        identifier = getGuestId()
+      }
 
-      if (uid) {
-        const { data } = await supabase
+      setUserId(identifier)
+
+      if (identifier) {
+        // Ambil data dari Supabase pakai identifier (User ID atau Guest ID)
+        const { data, error } = await supabase
           .from('user_preferences')
           .select('theme')
-          .eq('user_id', uid)
+          .eq('user_id', identifier)
           .single()
 
-        const savedTheme = data?.theme as Theme | undefined
-        applyTheme(savedTheme ?? 'light')
-      } else {
-        const localTheme = localStorage.getItem('theme') as Theme | null
-        applyTheme(localTheme ?? 'light')
+        if (data?.theme) {
+          applyTheme(data.theme as Theme)
+        } else {
+          // Fallback ke localStorage jika data di DB belum ada
+          const localTheme = localStorage.getItem('theme') as Theme | null
+          applyTheme(localTheme ?? 'light')
+        }
       }
     }
 
@@ -45,18 +67,24 @@ export const useThemePreference = () => {
     const next = theme === 'light' ? 'dark' : 'light'
     applyTheme(next)
 
+    // Jangan return dulu meski null, karena sekarang visitor punya ID
     if (!userId) return
 
-    await supabase
+    // Simpan ke Supabase (baik user login maupun visitor)
+    const { error } = await supabase
       .from('user_preferences')
       .upsert(
         {
-          user_id: userId,
+          user_id: userId, // Ini bisa ID User atau Guest ID
           theme: next,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }
       )
+      
+    if (error) {
+      console.error("Gagal menyimpan preferensi tema:", error.message)
+    }
   }
 
   return {
