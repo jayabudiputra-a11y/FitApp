@@ -111,39 +111,44 @@ const AvatarUploader = ({
         </p>
       </div>
 
-      {/* USERNAME SECTION */}
+      {/* USERNAME SECTION - FIXED HEIGHT BALANCE */}
       <form onSubmit={handleUpdateName} className="space-y-4">
         <div className="space-y-2">
           <label className="text-[11px] font-black uppercase tracking-[0.2em] text-black dark:text-white flex items-center gap-2">
             <User size={14} className="text-emerald-500" />
             Username
           </label>
-          <div className="flex gap-2">
+          
+          {/* Container dengan tinggi tetap h-[46px] agar seimbang */}
+          <div className="flex items-stretch gap-2 h-[46px]">
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
-              className="flex-1 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-bold text-black dark:text-white focus:border-[#00a354] outline-none transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700 shadow-sm"
+              className="flex-1 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-xl px-4 text-sm font-bold text-black dark:text-white focus:border-[#00a354] outline-none transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700 shadow-sm"
             />
+            
             <motion.button
               whileTap={{ scale: 0.95 }}
               type="submit"
               disabled={updatingName || !username || username === currentUsername}
-              className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-black uppercase text-[10px] tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-xl transition-all flex items-center gap-2"
+              className="px-6 bg-black dark:bg-white text-white dark:text-black rounded-xl font-black uppercase text-[10px] tracking-widest disabled:opacity-20 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center gap-2 min-w-[100px]"
             >
               {updatingName ? (
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Save size={16} />
+                <>
+                  <Save size={16} />
+                  <span>Save</span>
+                </>
               )}
-              {updatingName ? "" : "Save"}
             </motion.button>
           </div>
         </div>
       </form>
 
-      {/* RAINBOW DIVIDER (Selaras dengan Halaman Articles) */}
+      {/* RAINBOW DIVIDER */}
       <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-500 via-yellow-500 via-green-500 via-blue-500 to-transparent opacity-50" />
 
       {/* ERROR MESSAGE */}
