@@ -2,37 +2,74 @@ import { useMutation } from '@tanstack/react-query'
 import { subscribersApi } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import type { Subscriber } from '../types/index'
+
+const RATE_LIMIT_KEY = 'fitapp_sub_attempts';
+const MAX_ATTEMPTS = 4;
+
+const checkLocalLimit = () => {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const stored = localStorage.getItem(RATE_LIMIT_KEY);
+  let data = stored ? JSON.parse(stored) : { date: today, count: 0 };
+  
+  if (data.date !== today) {
+    data = { date: today, count: 0 };
+  }
+  
+  return { allowed: data.count < MAX_ATTEMPTS, data };
+};
 
 export const useSubscribe = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      // 1. Simpan email ke database public (tabel subscribers)
-      // Menggunakan fungsi dari api.ts yang sudah disediakan.
-      // Kita beri nama default 'Subscriber' karena form halaman Subscription hanya meminta input email.
-      await subscribersApi.insertIfNotExists(email, 'Subscriber')
+      const limit = checkLocalLimit();
+      if (!limit.allowed) {
+        throw new Error("LOCAL_LIMIT_REACHED");
+      }
 
-      // 2. Kirim Magic Link (OTP) untuk notifikasi email & login otomatis
-      // Ini memenuhi permintaan agar visitor "langsung bisa komen" setelah verifikasi,
-      // karena link email ini akan membuat session user aktif.
+      try {
+        await subscribersApi.insertIfNotExists(email, 'Subscriber');
+      } catch (dbError: any) {
+        console.warn('DB Insert skipped:', dbError.message);
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          // Arahkan user kembali ke halaman artikel setelah mereka klik link di email
           emailRedirectTo: `${window.location.origin}/articles`,
         }
-      })
+      });
 
       if (error) {
-        throw error
+        throw error;
       }
+
+      const updated = { ...limit.data, count: limit.data.count + 1 };
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(updated));
     },
     onSuccess: () => {
-      toast.success('Link login telah dikirim ke email Anda. Silakan cek inbox!')
+      toast.success('Link Login Terkirim!', {
+        description: 'Silakan cek email Anda untuk masuk.'
+      });
     },
     onError: (error: any) => {
-      console.error('Subscribe error:', error)
-      toast.error(error.message || 'Gagal mengirim email subscribe')
+      if (error.status === 429 || error.message?.includes('rate limit')) {
+        toast.error('Sistem Sedang Sibuk', {
+          description: 'Keamanan server aktif. Silakan tunggu 30 detik lalu coba lagi.'
+        });
+        return;
+      }
+
+      if (error.message === "LOCAL_LIMIT_REACHED") {
+        toast.error('Jatah Harian Habis', {
+          description: 'Anda sudah mencoba 4 kali hari ini. Silakan coba lagi besok.'
+        });
+        return;
+      }
+
+      toast.error('Terjadi Kesalahan', {
+        description: error.message || 'Gagal mengirim permintaan subscribe.'
+      });
     },
   })
 }
