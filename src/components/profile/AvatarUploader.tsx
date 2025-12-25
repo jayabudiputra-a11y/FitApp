@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { motion } from "framer-motion";
+import { Camera, Save, User } from "lucide-react";
 
 type Props = {
   userId: string;
@@ -21,7 +23,7 @@ const AvatarUploader = ({
   const [updatingName, setUpdatingName] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Simpan Username Baru
+  // Update Username
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || username === currentUsername) return;
@@ -30,7 +32,6 @@ const AvatarUploader = ({
     setError(null);
 
     try {
-      // Update ke public.user_profiles
       const { error: updateProfileError } = await supabase
         .from("user_profiles")
         .update({ username })
@@ -38,88 +39,47 @@ const AvatarUploader = ({
 
       if (updateProfileError) throw updateProfileError;
 
-      // Update session agar user_metadata ikut berubah
       const { error: updateAuthError } = await supabase.auth.updateUser({
         data: { full_name: username }
       });
 
-      if (updateAuthError) {
-        console.warn("Gagal update auth metadata:", updateAuthError);
-      }
+      if (updateAuthError) console.warn("Auth metadata update failed:", updateAuthError);
 
       onUsernameUpdated?.(username);
     } catch (err: any) {
-      console.error(err);
       setError(err.message ?? "Update name failed");
     } finally {
       setUpdatingName(false);
     }
   };
 
-  // Upload Avatar Baru
-  const handleUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // Upload Avatar
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setError(null);
-
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-        throw new Error("Only image files are allowed");
-      }
+      if (!file.type.startsWith("image/")) throw new Error("Only images allowed");
 
       setUploading(true);
-
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // 1. Upload ke Storage
-      const { error: uploadError } =
-        await supabase.storage
-          .from("avatars")
-          .upload(filePath, file, {
-            upsert: true,
-            contentType: file.type,
-          });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .getPublicUrl(filePath);
+        .upload(filePath, file, { upsert: true, contentType: file.type });
 
-      // 2. Update URL di tabel user_profiles
-      const { error: updateProfileError } =
-        await supabase
-          .from("user_profiles")
-          .update({
-            avatar_url: publicUrl,
-          })
-          .eq("id", userId);
+      if (uploadError) throw uploadError;
 
-      if (updateProfileError) {
-        throw updateProfileError;
-      }
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-      // 3. Update Session Metadata
-      const { error: updateAuthError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
-      });
-
-      if (updateAuthError) {
-        console.warn("Gagal update auth metadata:", updateAuthError);
-      }
+      await supabase.from("user_profiles").update({ avatar_url: publicUrl }).eq("id", userId);
+      await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
 
       onUploaded?.(publicUrl);
     } catch (err: any) {
-      console.error(err);
       setError(err.message ?? "Upload failed");
     } finally {
       setUploading(false);
@@ -127,61 +87,74 @@ const AvatarUploader = ({
   };
 
   return (
-    <div className="space-y-4 w-full">
-      {/* Avatar Preview & Button */}
-      <div className="flex items-center justify-center gap-4">
-        <img
-          src={
-            currentAvatarUrl ??
-            `https://ui-avatars.com/api/?name=${currentUsername || 'User'}&background=0D8ABC&color=fff`
-          }
-          alt="Avatar"
-          className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
-        />
-
-        <label className="cursor-pointer flex flex-col items-start gap-1">
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleUpload}
-            disabled={uploading}
+    <div className="space-y-8 w-full max-w-md mx-auto p-6 bg-transparent transition-colors duration-500">
+      
+      {/* AVATAR SECTION */}
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative group">
+          <motion.img
+            whileHover={{ scale: 1.05 }}
+            src={
+              currentAvatarUrl ??
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUsername || 'U')}&background=random&color=fff`
+            }
+            alt="Avatar"
+            className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-neutral-800 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.05)]"
           />
-          <span className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
-            {uploading ? "Uploading..." : "Change Photo"}
-          </span>
-          <span className="text-xs text-gray-400">JPG, PNG</span>
-        </label>
+          <label className="absolute bottom-0 right-0 p-2 bg-black dark:bg-white text-white dark:text-black rounded-full cursor-pointer shadow-lg hover:scale-110 active:scale-90 transition-all">
+            <Camera size={20} />
+            <input type="file" accept="image/*" hidden onChange={handleUpload} disabled={uploading} />
+          </label>
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 dark:text-neutral-500">
+          {uploading ? "UPLOADING..." : "CLICK CAMERA TO CHANGE"}
+        </p>
       </div>
 
-      {/* Input Username */}
-      <form onSubmit={handleUpdateName} className="flex flex-col gap-2">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-          Username
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
-            className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <button
-            type="submit"
-            disabled={updatingName || !username || username === currentUsername}
-            className="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {updatingName ? "Saving..." : "Save"}
-          </button>
+      {/* USERNAME SECTION */}
+      <form onSubmit={handleUpdateName} className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-[11px] font-black uppercase tracking-[0.2em] text-black dark:text-white flex items-center gap-2">
+            <User size={14} className="text-emerald-500" />
+            Username
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              className="flex-1 bg-white dark:bg-neutral-900 border-2 border-gray-100 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-bold text-black dark:text-white focus:border-[#00a354] outline-none transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700 shadow-sm"
+            />
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              disabled={updatingName || !username || username === currentUsername}
+              className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-black uppercase text-[10px] tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-xl transition-all flex items-center gap-2"
+            >
+              {updatingName ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              {updatingName ? "" : "Save"}
+            </motion.button>
+          </div>
         </div>
       </form>
 
-      {/* Error Message */}
+      {/* RAINBOW DIVIDER (Selaras dengan Halaman Articles) */}
+      <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-500 via-yellow-500 via-green-500 via-blue-500 to-transparent opacity-50" />
+
+      {/* ERROR MESSAGE */}
       {error && (
-        <p className="text-sm text-red-600 text-center bg-red-50 p-2 rounded border border-red-100">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-[11px] font-black uppercase tracking-widest text-red-500 text-center bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-100 dark:border-red-900/20"
+        >
           {error}
-        </p>
+        </motion.div>
       )}
     </div>
   );
