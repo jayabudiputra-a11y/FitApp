@@ -1,27 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Mengambil variabel environment
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-/**
- * Validasi ketat: 
- * Jika key tidak ada, kita beri tahu di console agar tidak menebak-nebak
- * tapi jangan biarkan aplikasi mengirim request kosong.
- */
+// Log sederhana untuk memastikan variabel tidak undefined di browser
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error(
-    "FATAL ERROR: Supabase URL or Anon Key is missing!\n" +
-    "Check your Vercel Environment Variables and ensure they start with VITE_"
-  );
+  console.warn("Supabase Env missing!");
 }
 
-/**
- * REVISI STRUKTUR:
- * 1. Kita hapus header 'global' manual karena library supabase-js 
- * secara otomatis mengisi apikey jika parameter kedua sudah benar.
- * 2. Kita tambahkan pengecekan runtime agar apikey tidak pernah 'undefined'.
- */
 export const supabase = createClient(
   supabaseUrl || "", 
   supabaseAnonKey || "", 
@@ -30,8 +16,15 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      // Memastikan cookie digunakan dengan benar di lingkungan produksi
-      storageKey: 'fitapp-auth-token', 
+      storageKey: 'fitapp-auth-token',
+    },
+    // KITA PAKSA MASUKKAN KE GLOBAL HEADERS
+    // Ini adalah 'obat' untuk error "No API key found" di endpoint /auth
+    global: {
+      headers: {
+        'apikey': supabaseAnonKey || "",
+        'Authorization': `Bearer ${supabaseAnonKey || ""}`
+      }
     }
   }
 );
