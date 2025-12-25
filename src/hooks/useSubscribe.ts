@@ -6,9 +6,7 @@ import { toast } from 'sonner'
 export const useSubscribe = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      const storageKey = 'fitapp-auth-token';
-      localStorage.removeItem(storageKey);
-      
+      localStorage.removeItem('fitapp-auth-token');
       await supabase.auth.signOut().catch(() => {});
 
       try {

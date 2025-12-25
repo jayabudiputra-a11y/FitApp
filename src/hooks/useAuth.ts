@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -8,17 +7,24 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Cek user saat ini
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-      setLoading(false);
-    });
+    const checkUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data.user) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.warn("Auth check inactive");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Dengarkan perubahan state login/logout
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
