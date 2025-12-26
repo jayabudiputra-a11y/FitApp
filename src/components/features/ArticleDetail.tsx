@@ -31,9 +31,12 @@ export default function ArticleDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-2xl font-black uppercase tracking-tighter animate-pulse bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-          Loading article...
-        </p>
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-xl font-black uppercase tracking-tighter animate-pulse text-neutral-500">
+            Loading article...
+          </p>
+        </div>
       </div>
     );
   }
@@ -67,6 +70,9 @@ export default function ArticleDetail() {
     excerpt ||
     `Read ${title} on Fitapp 2025. Explore fitness inspiration, mindset, and wellness community stories.`;
 
+  // URL untuk Meta Tags (Gunakan ukuran besar 1200px untuk OG Image)
+  const ogImageUrl = getOptimizedImage(coverImage, 1200);
+
   return (
     <main className="bg-white dark:bg-black min-h-screen pb-20 text-black dark:text-white transition-colors duration-300">
       <Helmet>
@@ -76,26 +82,20 @@ export default function ArticleDetail() {
         <meta property="og:type" content="article" />
         <meta property="og:title" content={`${title} — Fitapp 2025`} />
         <meta property="og:description" content={metaDescription} />
-        <meta
-          property="og:image"
-          content={getOptimizedImage(coverImage, 1200)}
-        />
+        <meta property="og:image" content={ogImageUrl} />
         <meta property="og:url" content={window.location.href} />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta
-          name="twitter:image"
-          content={getOptimizedImage(coverImage, 1200)}
-        />
+        <meta name="twitter:image" content={ogImageUrl} />
       </Helmet>
 
       <StructuredData
         article={{
           title,
           excerpt: metaDescription,
-          featured_image: getOptimizedImage(coverImage, 1200),
+          featured_image: ogImageUrl,
           published_at: article.published_at,
         }}
       />
@@ -116,12 +116,12 @@ export default function ArticleDetail() {
             <div className="flex flex-col items-center border-y border-gray-100 dark:border-neutral-800 py-6">
               <div className="flex items-center gap-3 mb-1">
                 <img
-                  src={myAvatar}
+                  src={getOptimizedImage(myAvatar, 80)}
                   alt={`Author ${article.author}`}
                   className="w-10 h-10 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-300 shadow-md"
                   width="40"
                   height="40"
-                  loading="lazy"
+                  loading="eager" // Eager karena bagian dari header atas
                 />
                 <span className="text-[12px] font-black uppercase tracking-widest">
                   By {article.author ?? "Fitapp Contributor"}
@@ -164,7 +164,7 @@ export default function ArticleDetail() {
                   {index === 0 && (
                     <div className="my-10 max-w-[600px] mx-auto text-center">
                       <ArticleCoverImage
-                        imageUrl={getOptimizedImage(coverImage, 800)}
+                        imageUrl={coverImage} // Jangan diproses getOptimizedImage di sini karena sudah diproses di dalam komponen ArticleCoverImage
                         title={title}
                         slug={slugValue}
                       />

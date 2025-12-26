@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Camera, Save, User } from "lucide-react";
+import { getOptimizedImage } from "@/lib/utils"; // Pastikan diimport
 
 type Props = {
   userId: string;
@@ -65,13 +66,11 @@ const AvatarUploader = ({
       const fileName = `${userId}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // MODIFIKASI DI SINI: Menambahkan Cache Control
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, {
           upsert: true,
           contentType: file.type,
-          // 31536000 detik = 1 Tahun. Ini akan menghilangkan warning di PageSpeed.
           cacheControl: '31536000', 
         });
 
@@ -81,7 +80,7 @@ const AvatarUploader = ({
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-      // Menambahkan timestamp cache-busting agar UI langsung terupdate meski cache lama 1 thn
+      // Gunakan timestamp untuk cache-busting agar UI terupdate seketika
       const optimizedUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
 
       await supabase
@@ -103,19 +102,21 @@ const AvatarUploader = ({
 
   return (
     <div className="space-y-6 w-full max-w-md mx-auto">
-      {/* AVATAR SECTION */}
       <div className="flex flex-col items-center gap-3">
         <div className="relative">
           <motion.img
             whileHover={{ scale: 1.05 }}
             src={
-              currentAvatarUrl ??
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                currentUsername || "U"
-              )}&background=random&color=fff`
+              currentAvatarUrl 
+                ? getOptimizedImage(currentAvatarUrl, 200) // Minta lebar 200px (aman untuk Retina display)
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    currentUsername || "U"
+                  )}&background=random&color=fff`
             }
-            alt="Avatar"
+            alt="User Avatar"
             className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-neutral-800 shadow-lg"
+            width="112"
+            height="112"
           />
 
           <label className="absolute bottom-0 right-0 p-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black rounded-full cursor-pointer shadow-lg border border-white/20 dark:border-black/10 active:scale-90 transition">
@@ -126,6 +127,7 @@ const AvatarUploader = ({
               hidden
               onChange={handleUpload}
               disabled={uploading}
+              aria-label="Upload profile picture"
             />
           </label>
         </div>
@@ -135,18 +137,18 @@ const AvatarUploader = ({
         </p>
       </div>
 
-      {/* USERNAME CARD */}
       <form
         onSubmit={handleUpdateName}
         className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3"
       >
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-neutral-700 dark:text-neutral-300">
+        <label htmlFor="username-input" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-neutral-700 dark:text-neutral-300">
           <User size={12} className="text-emerald-500" />
           Username
         </label>
 
         <div className="flex items-center gap-2 min-h-[44px]">
           <input
+            id="username-input"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -177,7 +179,7 @@ const AvatarUploader = ({
             "
           >
             {updatingName ? (
-              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
             ) : (
               <>
                 <Save size={14} />

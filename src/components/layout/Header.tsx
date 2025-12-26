@@ -17,14 +17,12 @@ export default function Header() {
     <header
       className="
         relative overflow-hidden transition-colors duration-300
-        /* Mengikuti tema: Putih di Light, Hitam di Dark */
         bg-white dark:bg-black 
-        /* Border bawah tipis agar terlihat elegan seperti Billboard */
         border-b border-gray-100 dark:border-neutral-900
       "
     >
-      {/* Rainbow top bar - Tetap dipertahankan sebagai ciri khas LGBTQ+ */}
-      <div className="absolute inset-x-0 top-0 h-1 flex">
+      {/* Rainbow top bar */}
+      <div className="absolute inset-x-0 top-0 h-1 flex" aria-hidden="true">
         <div className="flex-1 bg-red-500" />
         <div className="flex-1 bg-orange-500" />
         <div className="flex-1 bg-yellow-400" />
@@ -36,15 +34,21 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 relative">
         <div className="flex items-center justify-between">
 
-          {/* LOGO */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            {/* Logo diberi filter agar tetap terlihat jelas di background gelap */}
-            <img src={logo} alt="Fitapp Logo" className="h-8 w-8 dark:brightness-125 transition-transform group-hover:scale-110" />
+          {/* LOGO SECTION */}
+          <Link to="/" className="flex items-center space-x-3 group outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
+            <img 
+              src={logo} 
+              alt="Fitapp Logo" 
+              // Menambahkan width & height untuk mencegah CLS (Cumulative Layout Shift)
+              width="32" 
+              height="32"
+              className="h-8 w-8 dark:brightness-125 transition-transform group-hover:scale-110" 
+            />
             <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-black dark:text-white uppercase">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-black dark:text-white uppercase leading-none">
                 Fitapp
               </h1>
-              <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 tracking-widest uppercase">
+              <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 tracking-widest uppercase mt-0.5">
                 LGBTQ+ • Muscle Worship • Kings Only
               </p>
             </div>
@@ -53,22 +57,25 @@ export default function Header() {
           {/* RIGHT AREA */}
           <div className="flex items-center gap-4 md:gap-8">
             {/* DESKTOP NAV */}
-            <div className="hidden md:block">
+            <nav className="hidden md:block" aria-label="Main navigation">
               <Navigation />
-            </div>
+            </nav>
 
             {/* THEME TOGGLE */}
-            <div className="border-l border-gray-200 dark:border-neutral-800 pl-4">
+            <div className="border-l border-gray-200 dark:border-neutral-800 pl-4 flex items-center h-8">
                <ThemeToggle />
             </div>
 
             {/* MOBILE BUTTON */}
             <button
               onClick={toggleMenu}
-              className="md:hidden text-black dark:text-white p-2"
-              aria-label="Toggle navigation"
+              className="md:hidden text-black dark:text-white p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-full transition-colors"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
             >
-              <span className="text-2xl">☰</span>
+              <span className="text-2xl" aria-hidden="true">
+                {isOpen ? "✕" : "☰"}
+              </span>
             </button>
           </div>
         </div>

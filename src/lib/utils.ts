@@ -30,17 +30,12 @@ export function slugify(text: string): string {
     .replace(/ +/g, '-')
 }
 
-/**
- * MENGOPTIMALKAN IMAGE DELIVERY (SOLUSI PAGESPEED)
- * Menambahkan parameter transform Supabase untuk resize gambar di sisi server.
- */
 export function getOptimizedImage(url: string | null | undefined, width: number): string {
   if (!url) return "";
   
-  // Hanya proses jika URL berasal dari Supabase Storage
   if (url.includes('supabase.co')) {
-    // Menambahkan parameter width dan quality untuk kompresi otomatis
-    return `${url}?width=${width}&quality=75`;
+    const baseUrl = url.split('?')[0];
+    return `${baseUrl}?width=${width}&quality=75&format=webp`;
   }
   
   return url;

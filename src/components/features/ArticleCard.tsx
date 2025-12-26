@@ -1,20 +1,21 @@
 import { Link } from "react-router-dom";
 import { Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import FormattedDate from "@/components/features/FormattedDate";
 import myAvatar from "@/assets/myAvatar.jpg";
+import { getOptimizedImage } from "@/lib/utils"; // Import helper yang kita buat tadi
 import {
   generateFullImageUrl,
-  getLowQualityUrl,
   type LangCode,
 } from "@/utils/helpers";
 import { useSaveData } from "@/hooks/useSaveData";
 
+// Tambahkan priority ke interface agar tidak error di ArticleList
 interface ArticleCardProps {
   article: any;
+  priority?: boolean;
 }
 
-export default function ArticleCard({ article }: ArticleCardProps) {
+export default function ArticleCard({ article, priority = false }: ArticleCardProps) {
   const { i18n } = useTranslation();
   const lang = (i18n.language as LangCode) || "en";
   const { isEnabled, saveData } = useSaveData();
@@ -29,15 +30,15 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     ? article.featured_image_path_clean.split("\r\n")[0]?.trim()
     : null;
 
-  const highQualityUrl = firstImagePath
-    ? generateFullImageUrl(firstImagePath)
-    : null;
+  const rawImageUrl = firstImagePath ? generateFullImageUrl(firstImagePath) : null;
 
+  // LOGIKA OPTIMASI:
+  // 1. Jika mode hemat data (saveData) aktif, kita minta lebar sangat kecil (200px)
+  // 2. Jika normal, kita minta lebar 400px (sudah cukup untuk card list)
   const isLowQualityMode = isEnabled && saveData.quality === "low";
-  const displayUrl =
-    isLowQualityMode && highQualityUrl
-      ? getLowQualityUrl(highQualityUrl)
-      : highQualityUrl;
+  const targetWidth = isLowQualityMode ? 200 : 400;
+  
+  const displayUrl = rawImageUrl ? getOptimizedImage(rawImageUrl, targetWidth) : null;
 
   return (
     <article
@@ -48,13 +49,17 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         to={`/article/${article.slug}`}
         className="flex flex-row items-center gap-4 md:gap-8 outline-none"
       >
-        <div className="relative flex-shrink-0 w-[110px] h-[110px] md:w-[200px] md:h-[130px] overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+        <div className="relative flex-shrink-0 w-[110px] h-[110px] md:w-[200px] md:h-[130px] overflow-hidden bg-neutral-100 dark:bg-neutral-900 rounded-xl">
           {displayUrl ? (
             <img
               src={displayUrl}
               alt={title}
+              // OPTIMASI LCP: Gunakan eager untuk artikel teratas
+              loading={priority ? "eager" : "lazy"}
+              // Berikan dimensi pasti untuk mencegah layout shift (CLS)
+              width={200}
+              height={130}
               className="w-full h-full object-cover grayscale transition-all duration-500 ease-in-out group-hover:grayscale-0 group-hover:scale-110"
-              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 text-neutral-400 dark:text-neutral-600 text-[10px] font-black uppercase">
@@ -76,7 +81,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
 
           <div className="flex items-center gap-2">
             <img
-              src={myAvatar}
+              src={getOptimizedImage(myAvatar, 40)} // Optimasi avatar author juga
               alt="Author"
               className="w-4 h-4 rounded-full grayscale group-hover:grayscale-0 transition-all"
             />

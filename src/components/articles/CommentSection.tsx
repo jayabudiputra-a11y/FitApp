@@ -136,21 +136,25 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
               <article className="flex gap-4 p-5 bg-white dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-800 rounded-2xl">
                 <img
                   src={
-                    getOptimizedImage(c.user_avatar_url, 100) ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name)}`
+                    c.user_avatar_url 
+                      ? getOptimizedImage(c.user_avatar_url, 100) 
+                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name)}`
                   }
                   className="w-10 h-10 rounded-full object-cover"
-                  alt={c.user_name}
+                  alt={`Profile picture of ${c.user_name}`}
+                  loading="lazy"
+                  width="40"
+                  height="40"
                 />
                 <div className="flex-1">
                   <p className="font-black text-xs uppercase">{c.user_name}</p>
-                  <p className="mt-2">{c.content}</p>
+                  <p className="mt-2 text-neutral-800 dark:text-neutral-200">{c.content}</p>
                   <button
                     onClick={() => {
                       setReplyTo({ id: c.id, name: c.user_name });
                       formRef.current?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="mt-3 text-xs uppercase font-black text-neutral-500 hover:text-emerald-600"
+                    className="mt-3 text-xs uppercase font-black text-neutral-500 hover:text-emerald-600 transition-colors"
                   >
                     Reply
                   </button>
@@ -159,8 +163,15 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
 
               <div className="ml-12 mt-4 space-y-3">
                 {getReplies(c.id).map((reply) => (
-                  <div key={reply.id} className="text-sm">
-                    <strong>{reply.user_name}</strong>: {reply.content}
+                  <div key={reply.id} className="text-sm flex gap-3 items-start">
+                    <img 
+                       src={reply.user_avatar_url ? getOptimizedImage(reply.user_avatar_url, 80) : `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}`}
+                       className="w-6 h-6 rounded-full object-cover"
+                       alt=""
+                    />
+                    <p className="text-neutral-700 dark:text-neutral-400">
+                      <strong className="text-black dark:text-white">{reply.user_name}</strong>: {reply.content}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -174,10 +185,12 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
       </div>
 
       {totalPages > 1 && (
-        <nav className="mt-16 flex justify-center items-center gap-3">
+        <nav className="mt-16 flex justify-center items-center gap-3" aria-label="Pagination">
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(p => p - 1)}
+            className="p-2 disabled:opacity-30"
+            aria-label="Previous page"
           >
             <ChevronLeft />
           </button>
@@ -187,6 +200,8 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(p => p + 1)}
+            className="p-2 disabled:opacity-30"
+            aria-label="Next page"
           >
             <ChevronRight />
           </button>
