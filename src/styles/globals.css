@@ -2,53 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================
-   1. LOGIKA GAMBAR (GRAYSCALE TO COLOR)
-   ============================================================ */
-
-/* Secara default, semua gambar (Logo, GIF Hero) berwarna asli */
-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  -webkit-user-drag: none;
-  filter: none;
-  -webkit-filter: none;
-  transition: filter 0.5s ease, transform 0.5s ease;
+:root {
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* KHUSUS Gambar di dalam kartu artikel (ArticleCard) dibuat Hitam Putih */
-.group img, 
-article img {
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
-}
-
-/* Hover di Desktop: Berubah jadi Berwarna */
-.group:hover img {
-  filter: grayscale(0%) saturate(1.2);
-  -webkit-filter: grayscale(0%) saturate(1.2);
-}
-
-/* Respons HP Samsung (Sentuhan): Berubah jadi Berwarna */
-@media (hover: none) {
-  .group:active img, 
-  .group:focus img {
-    filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
-    -webkit-filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
-    transform: scale(1.05) !important;
-    transition: all 0.2s ease-in-out !important;
-  }
-}
-
-/* ============================================================
-   2. GLOBAL BEHAVIOR & THEME FIX
-   ============================================================ */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; /* Hapus kotak abu-abu saat tap di HP */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body, #root {
@@ -57,22 +19,46 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  /* Mengikuti class dari tailwind (bg-white atau bg-black) */
   @apply bg-white text-black dark:bg-black dark:text-white antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease;
   overflow-x: hidden;
+  text-rendering: optimizeSpeed;
 }
 
-/* Biarkan teks konten tetap bisa di-copy */
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+  content-visibility: auto;
+}
+
+.group img, 
+article img {
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: filter;
+}
+
+.group:hover img {
+  filter: grayscale(0%) saturate(1.2);
+  -webkit-filter: grayscale(0%) saturate(1.2);
+}
+
+@media (hover: none) {
+  .group:active img {
+    filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
+    -webkit-filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
+    transform: scale(1.03) !important;
+  }
+}
+
 p, h1, h2, h3, span {
   user-select: text;
   -webkit-user-select: text;
 }
 
-/* ============================================================
-   3. UTILITIES
-   ============================================================ */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -80,10 +66,9 @@ p, h1, h2, h3, span {
   -webkit-line-clamp: 2;
 }
 
-/* Scrollbar Pelangi (PC Only) */
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #ff0000, #ffff00, #00ff00, #0000ff);
+  background: #333;
   border-radius: 10px;
 }

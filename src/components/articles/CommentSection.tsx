@@ -1,21 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
-import { commentsApi } from "@/lib/api"; 
+import { commentsApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getOptimizedImage } from "@/lib/utils";
 import type { CommentWithUser } from "@/types";
 
 const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
   const { isAuthenticated } = useAuth();
+
   const [comments, setComments] = useState<CommentWithUser[]>([]);
   const [content, setContent] = useState("");
   const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Ref to scroll directly to the form
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 10;
 
@@ -51,47 +51,41 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
 
   const indexOfLastComment = currentPage * commentsPerPage;
   const indexOfFirstComment = indexOfLastComment - commentsPerPage;
-  const currentRootComments = rootComments.slice(
-    indexOfFirstComment,
-    indexOfLastComment
-  );
+  const currentRootComments = rootComments.slice(indexOfFirstComment, indexOfLastComment);
   const totalPages = Math.ceil(rootComments.length / commentsPerPage);
 
-  if (loading)
+  if (loading) {
     return (
-      <p className="text-center py-10 dark:text-gray-400">
+      <p className="text-center py-10 text-neutral-600 dark:text-neutral-400 font-medium">
         Loading discussion...
       </p>
     );
+  }
 
   return (
-    <div className="mt-10 border-t dark:border-neutral-800 pt-10">
+    <section className="mt-10 border-t border-gray-100 dark:border-neutral-800 pt-10">
       <div className="flex justify-between items-end mb-6">
-        <h3 className="text-2xl font-black uppercase dark:text-white">
+        <h2 className="text-2xl font-black uppercase dark:text-white">
           Discussion ({comments.length})
-        </h3>
+        </h2>
         {totalPages > 1 && (
-          <span className="text-[10px] font-bold text-gray-400 uppercase">
+          <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest">
             Page {currentPage} of {totalPages}
           </span>
         )}
       </div>
 
       {isAuthenticated ? (
-        <form
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="mb-10 scroll-mt-32"
-        >
+        <form ref={formRef} onSubmit={handleSubmit} className="mb-10 scroll-mt-32">
           {replyTo && (
-            <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/30 p-3 mb-2 rounded-lg border border-emerald-100 dark:border-emerald-800">
-              <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                Replying to <span className="font-bold">@{replyTo.name}</span>
+            <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 p-3 mb-2 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+              <p className="text-sm text-emerald-900 dark:text-emerald-400 font-medium">
+                Replying to <span className="font-bold underline">@{replyTo.name}</span>
               </p>
               <button
                 type="button"
                 onClick={() => setReplyTo(null)}
-                className="text-[10px] bg-white dark:bg-neutral-800 px-2 py-1 rounded shadow-sm text-red-500 font-bold"
+                className="text-[10px] bg-white dark:bg-neutral-800 px-3 py-1 rounded shadow-sm text-red-700 dark:text-red-400 font-black tracking-tighter hover:bg-red-50 transition-colors"
               >
                 CANCEL
               </button>
@@ -103,31 +97,32 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
                        bg-white dark:bg-neutral-900 
                        border-gray-200 dark:border-neutral-700 
                        text-gray-900 dark:text-white
-                       focus:border-emerald-500"
+                       focus:border-emerald-700"
             placeholder={
               replyTo
                 ? `Write a reply to ${replyTo.name}...`
                 : "Write your opinion..."
             }
+            rows={4}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
 
           <button
             type="submit"
-            className="mt-2 bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors"
+            className="mt-3 bg-emerald-700 hover:bg-emerald-800 text-white px-8 py-3 rounded-lg font-black uppercase text-xs tracking-widest shadow-lg shadow-emerald-900/10 transition-all active:scale-95"
           >
             {replyTo ? "Send Reply" : "Post Comment"}
           </button>
         </form>
       ) : (
-        <div className="p-6 bg-gray-50 dark:bg-neutral-900 rounded-xl text-center mb-10 border dark:border-neutral-800">
-          <p className="mb-4 dark:text-gray-300">
+        <div className="p-8 bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl text-center mb-10 border border-neutral-100 dark:border-neutral-800">
+          <p className="mb-4 text-neutral-700 dark:text-neutral-300 font-bold uppercase text-xs tracking-wider">
             Log in to join the discussion
           </p>
           <a
             href="/signin"
-            className="text-emerald-600 font-bold uppercase underline"
+            className="inline-block bg-neutral-900 dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-[.2em] hover:bg-emerald-700 dark:hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
           >
             Sign in here
           </a>
@@ -137,115 +132,67 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
       <div className="space-y-8 min-h-[400px]">
         {currentRootComments.length > 0 ? (
           currentRootComments.map((c) => (
-            <div key={c.id} className="group">
-              <div className="flex gap-4 p-4 bg-white dark:bg-neutral-900 border dark:border-neutral-800 rounded-xl shadow-sm">
+            <div key={c.id}>
+              <article className="flex gap-4 p-5 bg-white dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-800 rounded-2xl">
                 <img
                   src={
-                    c.user_avatar_url ||
-                    `https://ui-avatars.com/api/?name=${c.user_name}&background=10b981&color=fff`
+                    getOptimizedImage(c.user_avatar_url, 100) ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name)}`
                   }
-                  className="w-10 h-10 rounded-full border dark:border-neutral-700"
+                  className="w-10 h-10 rounded-full object-cover"
                   alt={c.user_name}
                 />
                 <div className="flex-1">
-                  <p className="font-black text-xs text-emerald-600 dark:text-emerald-400">
-                    {c.user_name}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-200 mt-1 leading-relaxed">
-                    {c.content}
-                  </p>
-                  <div className="flex gap-4 mt-3">
-                    <button
-                      onClick={() => {
-                        setReplyTo({ id: c.id, name: c.user_name });
-                        formRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        });
-                      }}
-                      className="text-[10px] font-bold text-gray-500 dark:text-gray-400 hover:text-emerald-600 uppercase"
-                    >
-                      Reply
-                    </button>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase">
-                      {new Date(c.created_at).toLocaleDateString("en-US")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Replies */}
-              <div className="ml-8 md:ml-12 mt-4 space-y-4 border-l-2 border-gray-100 dark:border-neutral-800 pl-4">
-                {getReplies(c.id).map((reply) => (
-                  <div
-                    key={reply.id}
-                    className="flex gap-3 p-3 bg-gray-50/50 dark:bg-neutral-800/30 rounded-lg border dark:border-neutral-800"
+                  <p className="font-black text-xs uppercase">{c.user_name}</p>
+                  <p className="mt-2">{c.content}</p>
+                  <button
+                    onClick={() => {
+                      setReplyTo({ id: c.id, name: c.user_name });
+                      formRef.current?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="mt-3 text-xs uppercase font-black text-neutral-500 hover:text-emerald-600"
                   >
-                    <img
-                      src={
-                        reply.user_avatar_url ||
-                        `https://ui-avatars.com/api/?name=${reply.user_name}&background=10b981&color=fff`
-                      }
-                      className="w-8 h-8 rounded-full shadow-sm"
-                      alt={reply.user_name}
-                    />
-                    <div>
-                      <p className="font-bold text-[11px] text-emerald-600 dark:text-emerald-400">
-                        {reply.user_name}
-                      </p>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">
-                        {reply.content}
-                      </p>
-                    </div>
+                    Reply
+                  </button>
+                </div>
+              </article>
+
+              <div className="ml-12 mt-4 space-y-3">
+                {getReplies(c.id).map((reply) => (
+                  <div key={reply.id} className="text-sm">
+                    <strong>{reply.user_name}</strong>: {reply.content}
                   </div>
                 ))}
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-400 py-20">
-            No discussions yet.
-          </p>
+          <div className="text-center py-20 text-neutral-500 uppercase text-xs font-bold tracking-widest">
+            No discussions yet. Be the first to comment.
+          </div>
         )}
       </div>
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="mt-12 flex justify-center items-center gap-2">
+        <nav className="mt-16 flex justify-center items-center gap-3">
           <button
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => prev - 1)}
-            className="p-2 rounded-full border dark:border-neutral-700 disabled:opacity-30 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+            onClick={() => setCurrentPage(p => p - 1)}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft />
           </button>
-
-          <div className="flex gap-2">
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`w-8 h-8 rounded-lg font-bold text-xs transition-all ${
-                  currentPage === i + 1
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
-                    : "bg-white dark:bg-neutral-900 border dark:border-neutral-700 dark:text-gray-400 hover:border-emerald-500"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-
+          <span className="text-xs font-bold">
+            {currentPage} / {totalPages}
+          </span>
           <button
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => prev + 1)}
-            className="p-2 rounded-full border dark:border-neutral-700 disabled:opacity-30 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+            onClick={() => setCurrentPage(p => p + 1)}
           >
-            <ChevronRight size={20} />
+            <ChevronRight />
           </button>
-        </div>
+        </nav>
       )}
-    </div>
+    </section>
   );
 };
 

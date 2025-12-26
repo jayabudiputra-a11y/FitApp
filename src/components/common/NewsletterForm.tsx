@@ -9,10 +9,8 @@ const NewsletterForm: React.FC = () => {
     e.preventDefault();
     if (!email) return;
 
-    // Simpan email agar bisa diambil oleh SignUpForm
     localStorage.setItem("pending_subscribe_email", email);
 
-    // Arahkan ke halaman pendaftaran
     navigate("/signup");
   };
 
@@ -24,11 +22,12 @@ const NewsletterForm: React.FC = () => {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your.email@example.com"
         required
-        className="w-full px-4 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-black dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+        aria-label="Email address for newsletter"
+        className="w-full px-4 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-black dark:text-white focus:ring-2 focus:ring-emerald-600 outline-none transition-all placeholder:text-neutral-500"
       />
       <button
         type="submit"
-        className="px-6 py-2 bg-emerald-600 text-white font-bold uppercase text-xs tracking-widest rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20 whitespace-nowrap"
+        className="px-6 py-2 bg-emerald-700 text-white font-black uppercase text-[10px] tracking-[.15em] rounded-xl hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/10 active:scale-95 whitespace-nowrap"
       >
         Subscribe
       </button>

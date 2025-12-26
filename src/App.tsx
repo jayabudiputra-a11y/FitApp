@@ -1,27 +1,27 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 
 import Layout from "@/components/layout/Layout";
-import Home from "@/pages/Home";
-import Articles from "@/pages/Articles";
-import ArticlePage from "@/pages/ArticlePage";
-import Category from "@/pages/Category";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Author from "@/pages/Author";
-import NotFound from "@/pages/NotFound";
-
-import Subscription from "@/pages/Subscription";
-import Profile from "@/pages/Profile";
-
-import SignUpForm from "@/components/SignUpForm";
-import SignInForm from "@/components/common/SignInForms";
 import IframeA11yFixer from "@/components/common/IframeA11yFixer";
-import AuthCallback from "@/pages/AuthCallback";
-
 import ScrollToTopButton from "@/components/features/ScrollToTopButton";
-
 import type { AuthPageLayoutProps } from "@/types";
+
+// OPTIMASI: Lazy Loading untuk semua halaman utama
+const Home = lazy(() => import("@/pages/Home"));
+const Articles = lazy(() => import("@/pages/Articles"));
+const ArticlePage = lazy(() => import("@/pages/ArticlePage"));
+const Category = lazy(() => import("@/pages/Category"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Author = lazy(() => import("@/pages/Author"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const Subscription = lazy(() => import("@/pages/Subscription"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
+
+// OPTIMASI: Lazy Loading untuk komponen auth yang cukup berat
+const SignUpForm = lazy(() => import("@/components/SignUpForm"));
+const SignInForm = lazy(() => import("@/components/common/SignInForms"));
 
 const AuthLayout: React.FC<AuthPageLayoutProps> = ({ children, title }) => {
   return (
@@ -48,42 +48,48 @@ function App() {
       <IframeA11yFixer />
       <ScrollToTopButton />
 
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="articles" element={<Articles />} />
-          <Route path="subscribe" element={<Subscription />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="article/:slug" element={<ArticlePage />} />
-          <Route path="category/:slug" element={<Category />} />
-          <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="author" element={<Author />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Route>
+      {/* Suspense membungkus rute agar ada tampilan transisi saat file JS diunduh */}
+      <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black" />}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="articles" element={<Articles />} />
+            <Route path="subscribe" element={<Subscription />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="article/:slug" element={<ArticlePage />} />
+            <Route path="category/:slug" element={<Category />} />
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="author" element={<Author />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Route>
 
-        <Route
-          path="/signup"
-          element={
-            <AuthLayout title="Join Fitapp">
-              <SignUpForm />
-            </AuthLayout>
-          }
-        />
+          <Route
+            path="/signup"
+            element={
+              <AuthLayout title="Join Fitapp">
+                <SignUpForm />
+              </AuthLayout>
+            }
+          />
 
-        <Route
-          path="/signin"
-          element={
-            <AuthLayout title="Welcome Back">
-              <SignInForm />
-            </AuthLayout>
-          }
-        />
+          <Route
+            path="/signin"
+            element={
+              <AuthLayout title="Welcome Back">
+                <SignInForm />
+              </AuthLayout>
+            }
+          />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
+
+// Perbaikan nama komponen di route profile agar konsisten
+const ProfilePage = Profile;
 
 export default App;

@@ -34,28 +34,29 @@ export default async function handler(req: Request): Promise<Response> {
     const { user } = data;
 
     if (user) {
-      const fullName = user.user_metadata?.full_name || 'Member Fitapp';
+      const fullName = user.user_metadata?.full_name || "Member Fitapp";
 
-      // 1. Sinkronisasi Newsletter (Selaras dengan subscribersApi)
       if (user.email) {
-        await supabase.from("subscribers").upsert({
-          email: user.email.toLowerCase(),
-          name: fullName,
-        }, { onConflict: 'email' });
+        await supabase.from("subscribers").upsert(
+          {
+            email: user.email.toLowerCase(),
+            name: fullName,
+          },
+          { onConflict: "email" }
+        );
       }
 
-      // 2. Sinkronisasi Profil (Selaras dengan authApi.ts)
-      // REVISI: Menggunakan fullName langsung agar konsisten dengan CommentSection
-      await supabase.from("user_profiles").upsert({
-        id: user.id,
-        username: fullName, // Tidak lagi menggunakan random suffix agar nama di komen sesuai input
-        avatar_url: user.user_metadata?.avatar_url ?? null,
-      }, { onConflict: 'id' });
+      await supabase.from("user_profiles").upsert(
+        {
+          id: user.id,
+          username: fullName,
+          avatar_url: user.user_metadata?.avatar_url ?? null,
+        },
+        { onConflict: "id" }
+        );
     }
 
-    // Berhasil: Arahkan ke homepage
     return Response.redirect(`${origin}/`, 302);
-
   } catch (err: unknown) {
     console.error("Callback fatal error:", err);
     return Response.redirect(`${origin}/signup?error=server_error`, 302);

@@ -1,8 +1,10 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/((?!assets/|robots.txt|sitemap.xml|favicon.svg|.*\\..*).*)",
+      "destination": "/"
+    }
   ],
-
   "headers": [
     {
       "source": "/(.*)",
@@ -29,11 +31,10 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://ui-avatars.com; media-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://fit-app-eight.vercel.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://ui-avatars.com; media-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://fit-app-eight.vercel.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         }
       ]
     },
-
     {
       "source": "/index.html",
       "headers": [
@@ -47,7 +48,6 @@
         }
       ]
     },
-
     {
       "source": "/(.*)\\.css",
       "headers": [
@@ -61,7 +61,6 @@
         }
       ]
     },
-
     {
       "source": "/(.*)\\.(js|ts)",
       "headers": [
@@ -75,7 +74,6 @@
         }
       ]
     },
-
     {
       "source": "/assets/(.*)\\.(png|jpg|jpeg|svg|gif|webp)",
       "headers": [
@@ -85,7 +83,6 @@
         }
       ]
     },
-
     {
       "source": "/(.*)\\.(woff2|ttf|otf)",
       "headers": [

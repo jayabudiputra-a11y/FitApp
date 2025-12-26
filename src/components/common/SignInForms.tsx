@@ -3,19 +3,24 @@ import { authApi } from "@/lib/api";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 
-const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => (
+// OPTIMASI: Warna emerald ditingkatkan ke 700 untuk kontras teks putih yang lebih baik
+const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
+  children,
+  ...props
+}) => (
   <button
-    className="w-full bg-emerald-600 text-white px-4 py-4 rounded-xl font-black uppercase text-[10px] tracking-[0.2em]
-               hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-500/10 active:scale-95"
+    className="w-full bg-emerald-700 text-white px-4 py-4 rounded-xl font-black uppercase text-[10px] tracking-[0.2em]
+               hover:bg-emerald-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-900/10 active:scale-95"
     {...props}
   >
     {children}
   </button>
 );
 
+// OPTIMASI: Placeholder dipergelap agar memenuhi standar WCAG (minimal ratio 4.5:1)
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
   <input
-    className="w-full border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-gray-900 text-center text-lg placeholder:text-gray-200"
+    className="w-full border border-gray-300 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all text-gray-900 text-center text-lg placeholder:text-gray-400"
     {...props}
   />
 );
@@ -53,7 +58,7 @@ const SignInForm: React.FC = () => {
       }
     } catch (err: any) {
       const msg = err.message?.includes("Invalid login credentials")
-        ? "Email not found or incorrect credentials. Please sign up if you don't have an account."
+        ? "Email not found. Please sign up if you don't have an account."
         : "Sign-in failed. Please check your connection or email.";
 
       setError(msg);
@@ -70,24 +75,28 @@ const SignInForm: React.FC = () => {
           <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">
             Welcome Back
           </h2>
-          <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.2em] mt-2">
+
+          {/* OPTIMASI: Warna emerald dipertegas */}
+          <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-[0.2em] mt-2">
             Sign in to continue the discussion
           </p>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-black uppercase tracking-widest text-center">
+          <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-[10px] font-black uppercase tracking-widest text-center leading-relaxed">
             {error}
           </div>
         )}
 
         <div className="space-y-2">
+          {/* OPTIMASI: Label dipergelap dari gray-400 ke gray-600 */}
           <label
             htmlFor="email"
-            className="block text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1"
+            className="block text-[9px] font-black uppercase tracking-[0.2em] text-gray-600 ml-1"
           >
             Email Address
           </label>
+
           <Input
             id="email"
             name="email"
@@ -96,6 +105,7 @@ const SignInForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
         </div>
 
@@ -106,11 +116,12 @@ const SignInForm: React.FC = () => {
         </div>
 
         <div className="text-center mt-6">
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">
+          {/* OPTIMASI: Text gray-400 dipergelap ke gray-600 */}
+          <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest italic">
             Don't have an account?
             <Link
               to="/signup"
-              className="text-emerald-600 font-black hover:underline not-italic ml-1"
+              className="text-emerald-700 font-black hover:underline not-italic ml-1"
             >
               Sign up here
             </Link>
@@ -118,9 +129,9 @@ const SignInForm: React.FC = () => {
         </div>
 
         <div className="flex justify-center gap-1.5 pt-4">
-          <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
-          <div className="h-1 w-4 bg-emerald-500 rounded-full"></div>
-          <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
+          <div className="h-1 w-1 bg-gray-300 rounded-full" />
+          <div className="h-1 w-4 bg-emerald-600 rounded-full" />
+          <div className="h-1 w-1 bg-gray-300 rounded-full" />
         </div>
       </form>
     </div>

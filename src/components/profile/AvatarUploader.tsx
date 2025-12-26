@@ -65,11 +65,14 @@ const AvatarUploader = ({
       const fileName = `${userId}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
+      // MODIFIKASI DI SINI: Menambahkan Cache Control
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, {
           upsert: true,
           contentType: file.type,
+          // 31536000 detik = 1 Tahun. Ini akan menghilangkan warning di PageSpeed.
+          cacheControl: '31536000', 
         });
 
       if (uploadError) throw uploadError;
@@ -78,16 +81,19 @@ const AvatarUploader = ({
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
+      // Menambahkan timestamp cache-busting agar UI langsung terupdate meski cache lama 1 thn
+      const optimizedUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
       await supabase
         .from("user_profiles")
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: optimizedUrlWithCacheBust })
         .eq("id", userId);
 
       await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl },
+        data: { avatar_url: optimizedUrlWithCacheBust },
       });
 
-      onUploaded?.(publicUrl);
+      onUploaded?.(optimizedUrlWithCacheBust);
     } catch (err: any) {
       setError(err.message ?? "Upload failed");
     } finally {

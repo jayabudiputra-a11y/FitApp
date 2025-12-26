@@ -26,19 +26,28 @@ export const articlesApi = {
   getAll: async (limit = 10, offset = 0): Promise<Article[]> => {
     const { data, error } = await supabase
       .from("articles")
-      .select("*")
+      .select("id, title, slug, thumbnail_url, published_at, category, views, description")
       .order("published_at", { ascending: false })
       .range(offset, offset + limit - 1);
+    
     if (error) handleSupabaseError(error, "articlesApi.getAll");
-    return data ?? [];
+    
+    return (data as unknown as Article[]) ?? [];
   },
   getBySlug: async (slug: string): Promise<Article> => {
-    const { data, error } = await supabase.from("articles").select("*").eq("slug", slug).single();
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    
     if (error || !data) handleSupabaseError(error, "articlesApi.getBySlug");
+    
     void (async () => {
       await supabase.rpc("increment_views", { article_id: data.id });
     })();
-    return data;
+    
+    return data as Article;
   },
 };
 
@@ -95,7 +104,7 @@ export const commentsApi = {
         )
       `)
       .eq("article_id", articleId)
-      .order("created_at", { ascending: true }); // Ascending agar alur reply logis (atas ke bawah)
+      .order("created_at", { ascending: true });
 
     if (error) {
       console.error("Fetch Comments Error:", error);
@@ -110,7 +119,9 @@ export const commentsApi = {
       user_id: c.user_id,
       parent_id: c.parent_id,
       user_name: c.user_profiles?.username ?? "Member Fitapp",
-      user_avatar_url: c.user_profiles?.avatar_url ?? null,
+      user_avatar_url: c.user_profiles?.avatar_url 
+        ? `${c.user_profiles.avatar_url}?v=${new Date(c.created_at).getTime()}` 
+        : null,
     }));
   },
 
