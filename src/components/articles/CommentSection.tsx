@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { commentsApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react"; 
 import { getOptimizedImage } from "@/lib/utils";
 import type { CommentWithUser } from "@/types";
 import FormattedDate from "@/components/features/FormattedDate";
@@ -61,20 +61,23 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
   }
 
   return (
-    <section className="mt-10 border-t border-gray-100 dark:border-neutral-800 pt-10">
-      <div className="flex justify-between items-end mb-8">
-        <h2 className="text-2xl font-black uppercase tracking-tight dark:text-white">
+    <section className="mt-0 pt-0">
+      {/* PENYEBAB JARAK: Elemen sebelumnya (galeri) kemungkinan memiliki margin bawah.
+          SOLUSI: Gunakan -mt-20 (atau lebih) untuk menarik paksa header ke atas.
+      */}
+      <div className="flex justify-between items-end mb-6 -mt-16 md:-mt-24 relative z-10"> 
+        <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight dark:text-white leading-none">
           Discussion ({comments.length})
         </h2>
         {totalPages > 1 && (
-          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-none">
             Page {currentPage} of {totalPages}
           </span>
         )}
       </div>
 
       {isAuthenticated ? (
-        <form ref={formRef} onSubmit={handleSubmit} className="mb-12 scroll-mt-32">
+        <form ref={formRef} onSubmit={handleSubmit} className="mb-8 scroll-mt-32">
           {replyTo && (
             <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 p-3 mb-3 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
               <p className="text-sm text-emerald-800 dark:text-emerald-400 font-medium">
@@ -93,59 +96,59 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
           <textarea
             className="w-full border-2 p-4 rounded-2xl outline-none transition-all
                        bg-white dark:bg-neutral-900 
-                       border-gray-200 dark:border-neutral-800 
+                       border-gray-100 dark:border-neutral-800 
                        text-gray-900 dark:text-neutral-100
-                       focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/5"
+                       focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/5 placeholder:text-neutral-400"
             placeholder={replyTo ? `Reply to ${replyTo.name}...` : "Share your thoughts..."}
-            rows={4}
+            rows={3}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
 
           <button
             type="submit"
-            className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-3.5 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-emerald-600/20 transition-all active:scale-95"
+            className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-600/20 transition-all active:scale-95"
           >
             {replyTo ? "Send Reply" : "Post Comment"}
           </button>
         </form>
       ) : (
-        <div className="p-10 bg-neutral-50 dark:bg-neutral-900/30 rounded-[2rem] text-center mb-12 border border-dashed border-neutral-200 dark:border-neutral-800">
-          <p className="mb-5 text-neutral-600 dark:text-neutral-400 font-bold uppercase text-[10px] tracking-[.2em]">
+        <div className="p-8 bg-neutral-50 dark:bg-neutral-900/30 rounded-3xl text-center mb-10 border border-dashed border-neutral-200 dark:border-neutral-800">
+          <p className="mb-4 text-neutral-600 dark:text-neutral-400 font-bold uppercase text-[10px] tracking-[.2em]">
             Join the conversation
           </p>
           <a
             href="/signin"
-            className="inline-block bg-black dark:bg-white text-white dark:text-black px-10 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-[.2em] hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white transition-all shadow-xl active:scale-95"
+            className="inline-block bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-[.2em] hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white transition-all shadow-xl active:scale-95"
           >
             Sign in to Comment
           </a>
         </div>
       )}
 
-      <div className="space-y-10">
+      <div className="space-y-8">
         {currentRootComments.length > 0 ? (
           currentRootComments.map((c) => (
-            <div key={c.id} className="group">
-              <article className="flex gap-5">
+            <div key={c.id} className="group/comment">
+              <article className="flex gap-4">
                 <img
-                  src={c.user_avatar_url ? getOptimizedImage(c.user_avatar_url, 120) : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name)}&background=random`}
-                  className="w-12 h-12 rounded-2xl object-cover ring-2 ring-neutral-100 dark:ring-neutral-800"
+                  src={c.user_avatar_url ? getOptimizedImage(c.user_avatar_url, 100) : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name)}&background=random`}
+                  className="w-10 h-10 rounded-xl object-cover ring-2 ring-neutral-50 dark:ring-neutral-900"
                   alt={c.user_name}
-                  width="48"
-                  height="48"
+                  width="40"
+                  height="40"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
                     <span className="font-bold text-sm text-neutral-900 dark:text-white truncate">
                       {c.user_name}
                     </span>
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 uppercase tracking-tighter">
+                    <span className="flex items-center gap-1 text-[9px] font-bold text-neutral-400 uppercase tracking-tighter">
                       <Clock className="w-2.5 h-2.5" />
                       <FormattedDate dateString={c.created_at} formatString="MMM d, yyyy" />
                     </span>
                   </div>
-                  <p className="text-[15px] leading-relaxed text-neutral-700 dark:text-neutral-300">
+                  <p className="text-[14px] md:text-[15px] leading-relaxed text-neutral-700 dark:text-neutral-300">
                     {c.content}
                   </p>
                   <button
@@ -153,7 +156,7 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
                       setReplyTo({ id: c.id, name: c.user_name });
                       formRef.current?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="mt-3 text-[10px] uppercase font-black text-emerald-600 dark:text-emerald-500 hover:underline tracking-widest"
+                    className="mt-2 text-[9px] uppercase font-black text-emerald-600 dark:text-emerald-500 hover:underline tracking-widest"
                   >
                     Reply
                   </button>
@@ -161,22 +164,22 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
               </article>
 
               {/* Replies Section */}
-              <div className="ml-12 md:ml-16 mt-6 space-y-6 border-l-2 border-neutral-50 dark:border-neutral-900 pl-6">
+              <div className="ml-10 md:ml-14 mt-4 space-y-5 border-l-2 border-neutral-50 dark:border-neutral-900 pl-5">
                 {getReplies(c.id).map((reply) => (
-                  <div key={reply.id} className="flex gap-4 items-start">
+                  <div key={reply.id} className="flex gap-3 items-start">
                     <img 
-                       src={reply.user_avatar_url ? getOptimizedImage(reply.user_avatar_url, 80) : `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=random`}
-                       className="w-8 h-8 rounded-xl object-cover"
+                       src={reply.user_avatar_url ? getOptimizedImage(reply.user_avatar_url, 60) : `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=random`}
+                       className="w-7 h-7 rounded-lg object-cover"
                        alt=""
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-xs dark:text-white">{reply.user_name}</span>
-                        <span className="text-[9px] font-bold text-neutral-400 uppercase">
+                        <span className="font-bold text-[13px] dark:text-white">{reply.user_name}</span>
+                        <span className="text-[8px] font-bold text-neutral-400 uppercase">
                           <FormattedDate dateString={reply.created_at} formatString="MMM d" />
                         </span>
                       </div>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      <p className="text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
                         {reply.content}
                       </p>
                     </div>
@@ -186,8 +189,8 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
             </div>
           ))
         ) : (
-          <div className="text-center py-24 bg-neutral-50/50 dark:bg-neutral-900/20 rounded-[2.5rem] border-2 border-dotted border-neutral-100 dark:border-neutral-800">
-            <p className="text-neutral-400 uppercase text-[10px] font-black tracking-[.3em]">
+          <div className="text-center py-16 bg-neutral-50/50 dark:bg-neutral-900/10 rounded-[2rem] border-2 border-dotted border-neutral-100 dark:border-neutral-800">
+            <p className="text-neutral-400 uppercase text-[9px] font-black tracking-[.3em]">
               No discussions yet
             </p>
           </div>
@@ -195,19 +198,19 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
       </div>
 
       {totalPages > 1 && (
-        <nav className="mt-20 flex justify-center items-center gap-6" aria-label="Pagination">
+        <nav className="mt-12 flex justify-center items-center gap-4" aria-label="Pagination">
           <button
             disabled={currentPage === 1}
             onClick={() => {
               setCurrentPage(p => p - 1);
               window.scrollTo({ top: formRef.current?.offsetTop ? formRef.current.offsetTop - 200 : 0, behavior: 'smooth' });
             }}
-            className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 disabled:opacity-20 hover:bg-emerald-600 hover:text-white transition-all"
+            className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-900 disabled:opacity-20 hover:bg-emerald-600 hover:text-white transition-all text-neutral-600 dark:text-neutral-400"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={18} />
           </button>
-          <span className="text-[10px] font-black uppercase tracking-[.2em] text-neutral-500">
-            {currentPage} <span className="mx-2">/</span> {totalPages}
+          <span className="text-[9px] font-black uppercase tracking-[.2em] text-neutral-500">
+            {currentPage} <span className="mx-1">/</span> {totalPages}
           </span>
           <button
             disabled={currentPage === totalPages}
@@ -215,9 +218,9 @@ const CommentSection: React.FC<{ articleId: string }> = ({ articleId }) => {
               setCurrentPage(p => p + 1);
               window.scrollTo({ top: formRef.current?.offsetTop ? formRef.current.offsetTop - 200 : 0, behavior: 'smooth' });
             }}
-            className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 disabled:opacity-20 hover:bg-emerald-600 hover:text-white transition-all"
+            className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-900 disabled:opacity-20 hover:bg-emerald-600 hover:text-white transition-all text-neutral-600 dark:text-neutral-400"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={18} />
           </button>
         </nav>
       )}

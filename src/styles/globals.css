@@ -26,19 +26,40 @@ body {
 }
 
 img {
+  /* Diubah ke block tapi dengan vertical-align untuk membuang gap bawah */
   display: block;
+  vertical-align: middle; 
   width: 100%;
   height: auto;
   -webkit-user-drag: none;
   content-visibility: auto;
 }
 
+/* INTERVENSI KERAPATAN KONTEN */
+/* Memaksa kontainer galeri agar tidak punya margin bawah sama sekali */
+section, .grid {
+  margin-bottom: 0 !important;
+}
+
+article .max-w-none div:last-child p {
+  margin-bottom: 0 !important;
+}
+
+/* Menghilangkan elemen p yang kosong */
+p:empty, p:has(br:only-child) {
+  display: none;
+}
+
+/* EFEK VISUAL GAMBAR DENGAN AKSELERASI HARDWARE */
+/* Selektor diperketat agar tidak merusak layout avatar di komentar */
 .group img, 
-article img {
+article .max-w-none img,
+article .my-6 img {
   filter: grayscale(100%);
   -webkit-filter: grayscale(100%);
-  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: filter;
+  transform: translateZ(0); 
+  transition: filter 0.5s ease-in-out, transform 0.5s ease-in-out;
+  will-change: filter, transform;
 }
 
 .group:hover img {
@@ -46,17 +67,29 @@ article img {
   -webkit-filter: grayscale(0%) saturate(1.2);
 }
 
+/* Mematikan efek grayscale khusus untuk avatar komentar agar tidak kontras dengan teks */
+.group\/comment img {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
 @media (hover: none) {
   .group:active img {
     filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
     -webkit-filter: grayscale(0%) saturate(1.4) brightness(1.1) !important;
-    transform: scale(1.03) !important;
+    transform: scale(1.03) translateZ(0) !important;
   }
 }
 
 p, h1, h2, h3, span {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Membuang spasi liar di akhir artikel sebelum diskusi */
+article > div:last-of-type {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .line-clamp-2 {

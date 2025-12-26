@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from "react-i18next";
-import Card from '@/components/ui/Card';
 import { generateFullImageUrl } from '@/utils/helpers'; 
 import { useSaveData } from '@/hooks/useSaveData';
 import { getOptimizedImage } from '@/lib/utils';
@@ -18,7 +17,7 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
   images: rawImagesString, 
   title, 
   slug, 
-  containerClassName = "px-6 pb-10 pt-4",
+  containerClassName = "px-0 py-0",
   downloadPrefix,
   startIndex
 }) => {
@@ -31,24 +30,31 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
                      .filter(path => path.length > 0)
     : [];
 
-  if (imagePaths.length === 0) {
-    return null;
-  }
+  if (imagePaths.length === 0) return null;
 
   return (
-    <div className={containerClassName}>
-      <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t(title)}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div className={`${containerClassName} leading-[0] block`}>
+      {title && title.trim() !== "" && (
+        <h2 className="text-lg font-black uppercase mb-4 text-gray-900 dark:text-white tracking-tight leading-normal">
+          {t(title)}
+        </h2>
+      )}
+      
+      {/* PERBAIKAN: 
+         1. Menghapus max-w-[600px] agar grid melebar penuh mengikuti artikel (800px)
+         2. Menambahkan mb-0 dan pb-0 untuk memastikan tidak ada sisa ruang di bawah grid
+      */}
+      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full mb-0 pb-0">
         {imagePaths.map((relativePath: string, i: number) => {
           const highQualityUrl = generateFullImageUrl(relativePath); 
           if (!highQualityUrl) return null;
 
           const isLowQualityMode = isEnabled && saveData.quality === 'low';
-          const targetWidth = isLowQualityMode ? 300 : 500;
+          const targetWidth = isLowQualityMode ? 200 : 400;
           const displayUrl = getOptimizedImage(highQualityUrl, targetWidth);
 
           return (
-            <Card key={i} variant="shadow" className="p-0 aspect-[4/5] overflow-hidden group border-0 bg-neutral-100 dark:bg-neutral-800">
+            <div key={i} className="aspect-[3/4] overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900 group relative">
               <a 
                 href={highQualityUrl} 
                 download={`fitapp_${slug}_${downloadPrefix}_${startIndex + i}.jpg`} 
@@ -59,17 +65,15 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
                 <img 
                   src={displayUrl} 
                   loading="lazy" 
-                  width="400"
-                  height="500"
-                  className="w-full h-full object-cover !m-0 transition-all duration-700 ease-in-out group-hover:scale-[1.05] group-hover:brightness-110" 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                   alt={`${t("Gallery image")} ${startIndex + i}`} 
                   onLoad={(e) => {
                     e.currentTarget.style.opacity = '1';
                   }}
-                  style={{ opacity: 0 }}
+                  style={{ opacity: 0, transition: 'opacity 0.5s' }}
                 />
               </a>
-            </Card>
+            </div>
           );
         })}
       </div>

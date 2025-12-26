@@ -70,21 +70,22 @@ export default function ArticleDetail() {
     excerpt ||
     `Read ${title} on Fitapp 2025. Explore fitness inspiration, mindset, and wellness community stories.`;
 
-  // URL untuk Meta Tags (Gunakan ukuran besar 1200px untuk OG Image)
   const ogImageUrl = getOptimizedImage(coverImage, 1200);
 
+  const cleanParagraphs = paragraphs.filter(
+    (line: string) => line.trim() !== "" && line.trim() !== "&nbsp;"
+  );
+
   return (
-    <main className="bg-white dark:bg-black min-h-screen pb-20 text-black dark:text-white transition-colors duration-300">
+    <main className="bg-white dark:bg-black min-h-screen pb-10 text-black dark:text-white transition-colors duration-300">
       <Helmet>
         <title>{title} — Fitapp 2025</title>
         <meta name="description" content={metaDescription} />
-
         <meta property="og:type" content="article" />
         <meta property="og:title" content={`${title} — Fitapp 2025`} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={ogImageUrl} />
         <meta property="og:url" content={window.location.href} />
-
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={metaDescription} />
@@ -101,19 +102,19 @@ export default function ArticleDetail() {
       />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6">
-        <article className="pt-12">
-          <header className="text-center mb-8">
+        <article className="pt-10">
+          <header className="text-center mb-6">
             <div className="flex justify-center mb-4">
               <span className="bg-[#008142] text-white text-[10px] font-black px-2 py-0.5 tracking-[.15em] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
                 Fitapp Selection
               </span>
             </div>
 
-            <h1 className="text-[34px] md:text-[58px] leading-[1] font-black uppercase tracking-tighter mb-8 bg-gradient-to-r from-red-500 via-orange-400 via-yellow-500 via-green-500 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-[34px] md:text-[58px] leading-[1] font-black uppercase tracking-tighter mb-6 bg-gradient-to-r from-red-500 via-orange-400 via-yellow-500 via-green-500 via-blue-500 to-purple-600 bg-clip-text text-transparent">
               {title}
             </h1>
 
-            <div className="flex flex-col items-center border-y border-gray-100 dark:border-neutral-800 py-6">
+            <div className="flex flex-col items-center border-y border-gray-100 dark:border-neutral-800 py-4">
               <div className="flex items-center gap-3 mb-1">
                 <img
                   src={getOptimizedImage(myAvatar, 80)}
@@ -121,14 +122,14 @@ export default function ArticleDetail() {
                   className="w-10 h-10 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-300 shadow-md"
                   width="40"
                   height="40"
-                  loading="eager" // Eager karena bagian dari header atas
+                  loading="eager"
                 />
                 <span className="text-[12px] font-black uppercase tracking-widest">
                   By {article.author ?? "Fitapp Contributor"}
                 </span>
               </div>
 
-              <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-400 mt-2">
+              <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-400 mt-1">
                 <FormattedDate
                   dateString={article.published_at}
                   formatString="MMMM d, yyyy"
@@ -140,31 +141,28 @@ export default function ArticleDetail() {
             </div>
           </header>
 
-          <p className="text-[20px] leading-relaxed font-medium text-neutral-700 dark:text-neutral-400 italic text-center mb-10">
+          <p className="text-[18px] md:text-[20px] leading-relaxed font-medium text-neutral-700 dark:text-neutral-400 italic text-center mb-8">
             {excerpt}
           </p>
 
           <div className="max-w-none">
-            {paragraphs.map((line: string, index: number) => {
+            {cleanParagraphs.map((line: string, index: number) => {
               const processedLine = line
                 .trim()
-                .replace(
-                  /\*\*(.*?)\*\*/g,
-                  `<strong class="font-black">$1</strong>`
-                )
+                .replace(/\*\*(.*?)\*\*/g, `<strong class="font-black">$1</strong>`)
                 .replace(/\*(.*?)\*/g, `<em class="italic">$1</em>`);
 
               return (
                 <div key={index}>
                   <p
-                    className="text-[18px] md:text-[20px] leading-[1.8] mb-8 font-serif"
+                    className="text-[18px] md:text-[20px] leading-[1.7] mb-6 font-serif"
                     dangerouslySetInnerHTML={{ __html: processedLine }}
                   />
 
                   {index === 0 && (
-                    <div className="my-10 max-w-[600px] mx-auto text-center">
+                    <div className="my-6 max-w-[700px] mx-auto text-center">
                       <ArticleCoverImage
-                        imageUrl={coverImage} // Jangan diproses getOptimizedImage di sini karena sudah diproses di dalam komponen ArticleCoverImage
+                        imageUrl={coverImage}
                         title={title}
                         slug={slugValue}
                       />
@@ -176,30 +174,34 @@ export default function ArticleDetail() {
           </div>
 
           {midGalleryString && (
-            <section className="my-16 pt-10 relative">
+            <section className="-mt-4 mb-8">
               <ArticleImageGallery
                 images={midGalleryString}
                 title=""
                 slug={slugValue}
                 downloadPrefix="mid"
                 startIndex={1}
+                containerClassName="px-0 py-0" 
               />
             </section>
           )}
 
+          {/* PERBAIKAN: Menghapus mb-4 agar tidak ada jarak bawah */}
           {bottomGalleryString && (
-            <section className="mt-20 pt-12 relative">
+            <section className="-mt-4 mb-0">
               <ArticleImageGallery
                 images={bottomGalleryString}
                 title=""
                 slug={slugValue}
                 downloadPrefix="bottom"
                 startIndex={7}
+                containerClassName="px-0 py-0"
               />
             </section>
           )}
 
-          <section className="mt-24 border-t border-gray-100 dark:border-neutral-900 pt-12">
+          {/* PERBAIKAN: mt-0 dan pt-0 agar benar-benar menempel pada section galeri di atasnya */}
+          <section className="mt-0 border-t border-gray-100 dark:border-neutral-900 pt-0">
             <CommentSection articleId={article.id} />
           </section>
         </article>
