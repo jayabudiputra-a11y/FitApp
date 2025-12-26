@@ -34,39 +34,51 @@ export const articlesApi = {
       .eq("slug", slug)
       .single();
     if (error || !data) handleSupabaseError(error, "articlesApi.getBySlug");
+    
+    // Increment views background
     void (async () => {
       const { error } = await supabase.rpc("increment_views", { article_id: data.id });
       if (error) console.warn("increment_views skipped:", error.message);
     })();
+    
     return data;
   },
 };
 
 /* =====================================================
-   SUBSCRIBERS (FIXED: Error 400 solved)
+   SUBSCRIBERS (FIXED: Menggunakan Kolom yang Benar)
 ===================================================== */
 export const subscribersApi = {
-  insertIfNotExists: async (email: string, name?: string): Promise<void> => {
+  insertIfNotExists: async (
+    email: string,
+    name?: string
+  ): Promise<void> => {
     if (!email) return;
+
     try {
-      // Menggunakan .insert() tanpa onConflict karena constraint sudah dihapus
+      // Kita hanya mengirim email dan name.
+      // is_active dan subscribed_at akan diisi otomatis oleh TRIGGER DB.
       const { error } = await supabase
         .from("subscribers")
-        .insert({
-          email,
-          name: name ?? null,
-          is_active: true,
-          created_at: new Date().toISOString()
-        });
-      if (error) console.warn("subscribersApi info:", error.message);
+        .insert([
+          { 
+            email: email.toLowerCase(), 
+            name: name ?? null 
+          }
+        ]);
+
+      if (error) {
+        // Jika error 400 muncul di sini, biasanya karena cache schema di client.
+        console.warn("subscribersApi info:", error.message);
+      }
     } catch (error) {
-      console.warn("subscribersApi catch:", error);
+      console.warn("subscribersApi fatal catch:", error);
     }
   },
 };
 
 /* =====================================================
-   AUTH & COMMENTS (Sisa file tetap sama)
+   AUTH & COMMENTS
 ===================================================== */
 export const authApi = {
   signUp: async ({ email, password, name }: SignUpData) => {
@@ -75,7 +87,7 @@ export const authApi = {
       email,
       password,
       options: {
-        data: { full_name: name.trim(), avatar_url: null },
+        data: { full_name: name.trim() },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -86,7 +98,6 @@ export const authApi = {
   signIn: async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) handleSupabaseError(error, "authApi.signIn");
-    if (data.user?.email) void subscribersApi.insertIfNotExists(data.user.email, data.user.user_metadata?.full_name);
     return data;
   },
   signOut: async () => {
@@ -108,7 +119,11 @@ export const commentsApi = {
   addComment: async (articleId: string, content: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("You must be logged in to comment");
-    const { error } = await supabase.from("comments").insert({ article_id: articleId, user_id: user.id, content });
+    const { error } = await supabase.from("comments").insert({ 
+      article_id: articleId, 
+      user_id: user.id, 
+      content 
+    });
     if (error) handleSupabaseError(error, "commentsApi.addComment");
   },
 };

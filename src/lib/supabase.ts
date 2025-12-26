@@ -8,20 +8,9 @@ export const supabase = createClient(
   supabaseAnonKey || "", 
   {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      storage: {
-        getItem: () => null,
-        setItem: () => {},
-        removeItem: () => {},
-      }
-    },
-    global: {
-      headers: {
-        'apikey': supabaseAnonKey || "",
-        'Authorization': `Bearer ${supabaseAnonKey || ""}`
-      }
+      persistSession: true,      // WAJIB TRUE: Agar user tetap login saat refresh
+      autoRefreshToken: true,    // WAJIB TRUE: Agar login tidak expired tiap jam
+      detectSessionInUrl: true,  // WAJIB TRUE: Agar klik link dari email otomatis login
     }
   }
 );

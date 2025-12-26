@@ -29,13 +29,13 @@ export interface Category {
 }
 
 /* =========================
-   Subscriber
+   Subscriber (Selaras dengan Column: subscribed_at)
 ========================= */
 export interface Subscriber {
   id?: string;
   email: string;
-  name?: string;
-  subscribed_at?: string;
+  name?: string | null;
+  subscribed_at?: string; // Sesuai dengan database trigger
   is_active?: boolean;
   preferences?: {
     categories: string[];
@@ -44,11 +44,13 @@ export interface Subscriber {
 }
 
 /* =========================
-   Profile
+   Profile (Selaras dengan Column: username)
 ========================= */
 export interface UserProfile {
-  username: string;
+  id?: string;
+  username: string; // Bukan display_name
   avatar_url: string | null;
+  updated_at?: string;
 }
 
 /* =========================
@@ -71,12 +73,12 @@ export interface SignUpData {
 }
 
 export interface AuthPageLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode; // Menggunakan import ReactNode di atas
   title: string;
 }
 
 /* =========================
-   Comments
+   Comments (Selaras dengan Relasi user_profiles)
 ========================= */
 export interface Comment {
   id: string;
@@ -84,14 +86,11 @@ export interface Comment {
   user_id: string;
   content: string;
   created_at: string;
-  auth: {
-    users: {
-      name: string | null;
-      raw_user_meta_data: {
-        avatar_url: string | null;
-      } | null;
-    };
-  };
+  // Join ke user_profiles, bukan schema auth internal
+  user_profiles: {
+    username: string;
+    avatar_url: string | null;
+  } | null;
 }
 
 export interface NewComment {
@@ -105,7 +104,7 @@ export interface CommentWithUser {
   user_id: string;
   content: string;
   created_at: string;
-  user_name: string | null;
+  user_name: string; // Dipetakan dari user_profiles.username
   user_avatar_url: string | null;
 }
 
