@@ -6,16 +6,23 @@ import { toast } from 'sonner'
 export const useSubscribe = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      localStorage.removeItem('fitapp-auth-token');
-      await supabase.auth.signOut().catch(() => {});
+      // --- PENGAMAN MANDIRI (4x per jam) ---
+      const now = Date.now();
+      const storageKey = `attempts_${email}`;
+      const data = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      
+      // Filter hanya percobaan dalam 1 jam terakhir
+      const recentAttempts = data.filter((ts: number) => now - ts < 3600000);
 
-      try {
-        await subscribersApi.insertIfNotExists(email, 'Subscriber');
-        console.log('Data berhasil masuk ke tabel subscribers');
-      } catch (dbError: any) {
-        console.warn('DB Status:', dbError.message);
+      if (recentAttempts.length >= 4) {
+        throw new Error('LIMIT_LOKAL');
       }
+      // -------------------------------------
 
+      // 1. Simpan ke database (ini biasanya tidak kena rate limit)
+      await subscribersApi.insertIfNotExists(email, 'Subscriber');
+
+      // 2. Kirim OTP (ini yang sering memicu error 429)
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -24,29 +31,36 @@ export const useSubscribe = () => {
       });
 
       if (error) throw error;
+
+      // Catat sukses untuk hitungan limit
+      recentAttempts.push(now);
+      localStorage.setItem(storageKey, JSON.stringify(recentAttempts));
     },
     onSuccess: () => {
+      // Kembali ke pesan awal Anda yang simple
       toast.success('Pendaftaran Berhasil!', {
         description: 'Silakan cek kotak masuk email Anda untuk konfirmasi.'
       });
     },
     onError: (error: any) => {
-      if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
-        toast.info('Pendaftaran Diterima', {
-          description: 'Data sudah masuk. Jika email konfirmasi belum ada, mohon tunggu 60 detik sebelum mencoba lagi.'
+      // Jika kena limit buatan kita sendiri
+      if (error.message === 'LIMIT_LOKAL') {
+        toast.error('Terlalu sering', {
+          description: 'Anda sudah mencoba 4 kali. Mohon tunggu 1 jam lagi.'
         });
         return;
       }
 
-      if (!error.message || error.message === "{}" || Object.keys(error).length === 0) {
-        toast.warning('Data Sudah Tersimpan', {
-          description: 'Email sudah masuk daftar, namun server sedang sibuk. Silakan cek email secara berkala.'
+      // Jika tetap kena 429 dari Supabase
+      if (error.status === 429) {
+        toast.info('Email sudah terdaftar', {
+          description: 'Silakan cek folder spam atau tunggu 1 menit untuk mencoba lagi.'
         });
         return;
       }
-      
+
       toast.error('Gagal', { 
-        description: error.message || 'Terjadi kesalahan sistem.' 
+        description: error.message || 'Terjadi kesalahan.' 
       });
     },
   })
