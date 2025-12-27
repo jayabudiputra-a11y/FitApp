@@ -1,38 +1,44 @@
+/* ======================
+    T
+   ====================== */
+const _0xtrk = [
+  "VITE_SUPABASE_URL",        
+  "VITE_SUPABASE_ANON_KEY",    
+  "/functions/v1/track-view",  
+  "POST",                      
+  "application/json",          
+  "Authorization",             
+  "Bearer "                    
+] as const;
+
+const _t = (i: number) => _0xtrk[i] as string;
 
 export async function trackPageView(articleId: string) {
   try {
-    if (!articleId) {
-      console.warn("TRACK: missing articleId");
-      return;
-    }
+    if (!articleId) return;
 
-    const base = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const _B = import.meta.env[_t(0)];
+    const _K = import.meta.env[_t(1)];
 
-    if (!base || !anonKey) {
-      console.error("TRACK: missing Supabase env");
-      return;
-    }
+    if (!_B || !_K) return;
 
-    const endpoint = `${base.replace(/\/$/, "")}/functions/v1/track-view`;
+    const _E = `${_B.replace(/\/$/, "")}${_t(2)}`;
 
-    const res = await fetch(`${endpoint}?article_id=${encodeURIComponent(articleId)}`, {
-      method: "POST",
+    const res = await fetch(`${_E}?article_id=${encodeURIComponent(articleId)}`, {
+      method: _t(3),
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": _t(4),
         "x-article-id": articleId,
-        Authorization: `Bearer ${anonKey}`,
+        [_t(5)]: `${_t(6)}${_K}`, 
       },
       body: JSON.stringify({ article_id: articleId }),
     });
 
-    const txt = await res.text();
-    console.log("TRACK response:", res.status, txt);
-
-    if (!res.ok) {
-      console.error("TRACK failed:", res.status, txt);
+    if (!res.ok && import.meta.env.DEV) {
+      const txt = await res.text();
+      console.error("SYS_TRACK_FAULT:", res.status, txt);
     }
   } catch (err) {
-    console.error("TRACK error:", err);
+    if (import.meta.env.DEV) console.error("NET_SIGNAL_LOST:", err);
   }
 }

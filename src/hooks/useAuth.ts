@@ -10,7 +10,6 @@ export const useAuth = () => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Menggunakan authApi yang sudah diobfuscate
         const currentUser = await authApi.getCurrentUser();
         setUser(currentUser);
       } catch (error) {
@@ -24,12 +23,13 @@ export const useAuth = () => {
 
     initAuth();
 
-    // Listener untuk perubahan session
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser(session.user as AuthUser);
+        // Jangan langsung set session.user, panggil API agar URL avatar diproses
+        const currentUser = await authApi.getCurrentUser();
+        setUser(currentUser);
       } else {
         setUser(null);
       }
@@ -43,7 +43,6 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      // Konsisten menggunakan authApi untuk logout
       await authApi.signOut();
       setUser(null);
     } catch (error) {

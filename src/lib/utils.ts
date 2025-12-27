@@ -1,6 +1,12 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+/* ======================
+    
+   ====================== */
+const _0xmask = ['supabase.co', 'width=', 'quality=75&format=webp', 'split', '?'] as const;
+const _m = (i: number) => _0xmask[i] as any;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -30,12 +36,23 @@ export function slugify(text: string): string {
     .replace(/ +/g, '-')
 }
 
+/**
+ * 
+ */
+
 export function getOptimizedImage(url: string | null | undefined, width: number): string {
   if (!url) return "";
   
-  if (url.includes('supabase.co')) {
-    const baseUrl = url.split('?')[0];
-    return `${baseUrl}?width=${width}&quality=75&format=webp`;
+  const _DOM = _m(0); // 
+  const _SEP = _m(4); // '?'
+  
+  if (url.includes(_DOM)) {
+    const hasParams = url.includes(_SEP);
+    const connector = hasParams ? '&' : _SEP;
+    
+    if (url.includes(_m(1))) return url;
+
+    return `${url}${connector}${_m(1)}${width}&${_m(2)}`;
   }
   
   return url;

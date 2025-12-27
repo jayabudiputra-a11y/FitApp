@@ -33,9 +33,7 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
   if (imagePaths.length === 0) return null;
 
   return (
-    /* REVISI: 
-      1. Menambahkan 'overflow-hidden' agar transformasi gambar tidak membuat scrollbar liar.
-      2. Memastikan leading-[0] untuk mematikan celah font descender.
+    /* 
     */
     <div className={`${containerClassName} leading-[0] block overflow-hidden`}>
       {title && title.trim() !== "" && (
@@ -44,10 +42,8 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
         </h2>
       )}
       
-      {/* REVISI GRID:
-        1. Menghapus max-w-[600px] agar gallery memenuhi 800px (lebar artikel).
-        2. Menggunakan 'place-items-start' untuk memastikan tidak ada stretch otomatis yang aneh.
-        3. mb-0 dan pb-0 untuk merapatkan ke komponen berikutnya.
+      {/* 
+        
       */}
       <div className="grid grid-cols-2 gap-2 md:gap-3 w-full mb-0 pb-0 place-items-start">
         {imagePaths.map((relativePath: string, i: number) => {
@@ -78,11 +74,11 @@ const ArticleImageGallery: React.FC<ArticleImageGalleryProps> = ({
                   onLoad={(e) => {
                     e.currentTarget.style.opacity = '1';
                   }}
-                  /* Inline style untuk smooth fade-in saat load */
+                  /*  */
                   style={{ opacity: 0, transition: 'opacity 0.5s', display: 'block' }}
                 />
                 
-                {/* Overlay tipis saat hover agar efek interaktif lebih terasa */}
+                {/*  */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
               </a>
             </div>

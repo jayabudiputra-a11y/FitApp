@@ -1,16 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { generateFullImageUrl } from '@/utils/helpers' // Import helper untuk memproses URL
 
 /* ======================
-    ENGINE
+    
    ====================== */
 const _0xrepo = [
     'articles_denormalized', 
     'article_view_counts',    
     'tags',                  
-    'article_id',            
+    'article_id',           
     'total_views',           
-    'published_at'          
+    'published_at'           
 ] as const;
 
 const _r = (i: number) => _0xrepo[i] as any;
@@ -47,8 +48,15 @@ export const useArticles = (tag?: string | null) => {
 
         let processedData = (rawArticles ?? []).map((article: any) => {
             const liveViews = viewsMap[article.id];
+            
+            const rawPath = article.featured_image_url_clean || article.featured_image_path_clean;
+            const processedCover = rawPath ? generateFullImageUrl(rawPath.split(/[\r\n]+/)[0]) : '';
+
             return {
                 ...article,
+                // Pastikan thumbnail_url atau coverImage terisi URL valid
+                featured_image: processedCover, 
+                thumbnail_url: processedCover,
                 views: liveViews !== undefined ? liveViews : article.views, 
             };
         });

@@ -16,7 +16,6 @@ export default function ArticleList({ selectedTag, searchTerm }: Props) {
   const lang = (i18n.language as LangCode) || "en";
   const { data: allArticles, isLoading, error } = useArticles(null);
   
-  // State untuk melacak item yang sedang di-hover (Rahasia Lasso)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const filteredArticles = useMemo(() => {
@@ -83,7 +82,7 @@ export default function ArticleList({ selectedTag, searchTerm }: Props) {
 
   return (
     <>
-      {/* LayoutGroup adalah "library rahasia" agar animasi antar item tersinkronisasi */}
+      {/*  */}
       <LayoutGroup id="article-lasso">
         <div 
           role="list"
@@ -117,7 +116,7 @@ export default function ArticleList({ selectedTag, searchTerm }: Props) {
                 )}
               </AnimatePresence>
 
-              {/* Tambahkan padding agar lasso terlihat lebih luas dari konten */}
+              {/*  */}
               <div className="relative z-10 py-1">
                 <ArticleCard 
                   article={a} 

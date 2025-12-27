@@ -1,17 +1,27 @@
 import { supabase } from "./supabase";
 import type { Article, AuthUser, CommentWithUser } from "../types";
+import { generateFullImageUrl } from "../utils/helpers";
 
 /* ======================
-    INTERNAL CORE OBFUSCATOR
+    
     ====================== */
 const _0xdb = [
-  "subscribers", "articles", "user_profiles", "comments", 
-  "email", "published_at", "slug", "article_id",
-  "FitApp_2025_Secure!@#$", "reverse", "split", "join"
+  "subscribers",   
+  "articles",      
+  "user_profiles", 
+  "comments",      
+  "email",         
+  "published_at",  
+  "slug",          
+  "article_id",    
+  "FitApp_2025_Secure!@#$", 
+  "reverse",       
+  "split",         
+  "join"           
 ] as const;
 
 /**
- * Fix Error 2589: Cast ke 'any' untuk memutus rekursi tipe Supabase yang terlalu dalam.
+ * 
  */
 const _v = (i: number) => _0xdb[i] as any;
 
@@ -33,7 +43,7 @@ export const subscribersApi = {
   insertIfNotExists: async (email: string, name?: string): Promise<void> => {
     if (!email) return;
     try {
-      await supabase.from(_v(0) as string).upsert(
+      await (supabase.from(_v(0) as string) as any).upsert(
         [{ [_v(4)]: email.toLowerCase(), name: name ?? null }],
         { onConflict: _v(4) }
       );
@@ -45,15 +55,21 @@ export const subscribersApi = {
 
 export const articlesApi = {
   getAll: async (limit = 10, offset = 0): Promise<Article[]> => {
-    // Kita cast 'from' ke any untuk melewati validasi skema TS yang sangat berat
     const { data, error } = await (supabase.from(_v(1) as string) as any)
       .select("id, title, slug, thumbnail_url, published_at, category, views, description")
       .order(_v(5) as string, { ascending: false })
       .range(offset, offset + limit - 1);
     
     if (error) handleSupabaseError(error, "0x1"); 
-    return (data as unknown as Article[]) ?? [];
+    
+    const articles = (data || []).map((art: any) => ({
+      ...art,
+      thumbnail_url: art.thumbnail_url ? generateFullImageUrl(art.thumbnail_url) : ""
+    }));
+
+    return articles as unknown as Article[];
   },
+
   getBySlug: async (slug: string): Promise<Article> => {
     const { data, error } = await (supabase.from(_v(1) as string) as any)
       .select("*")
@@ -66,21 +82,34 @@ export const articlesApi = {
       await supabase.rpc("increment_views", { [_v(7)]: data.id });
     })();
     
-    return data as Article;
+    return {
+      ...data,
+      featured_image: data.featured_image ? generateFullImageUrl(data.featured_image) : ""
+    } as Article;
   },
 };
 
 export const authApi = {
   getCurrentUser: async (): Promise<AuthUser | null> => {
     const { data: { user } } = await supabase.auth.getUser();
-    return (user as AuthUser) ?? null;
+    if (user) {
+      return {
+        ...user,
+        user_metadata: {
+          ...user.user_metadata,
+          avatar_url: user.user_metadata?.avatar_url ? generateFullImageUrl(user.user_metadata.avatar_url) : null
+        }
+      } as unknown as AuthUser;
+    }
+    return null;
   },
+
   signUp: async ({ email, name }: { email: string; name: string }) => {
     if (!name || name.trim().length < 2) throw new Error("IDENT_SHORT");
     
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
-      password: _INTERNAL_KEY,
+      password: _INTERNAL_KEY, 
       options: { data: { full_name: name.trim() } },
     });
 
@@ -96,6 +125,7 @@ export const authApi = {
     }
     return data;
   },
+
   signInWithEmailOnly: async (email: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
@@ -104,6 +134,7 @@ export const authApi = {
     if (error) handleSupabaseError(error, "0x4");
     return data;
   },
+
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) handleSupabaseError(error, "0x5");
@@ -131,7 +162,7 @@ export const commentsApi = {
       parent_id: c.parent_id,
       user_name: c[_v(2)]?.username ?? "Member",
       user_avatar_url: c[_v(2)]?.avatar_url 
-        ? `${c[_v(2)].avatar_url}?v=${new Date(c.created_at).getTime()}` 
+        ? `${generateFullImageUrl(c[_v(2)].avatar_url)}?v=${new Date(c.created_at).getTime()}` 
         : null,
     }));
   },

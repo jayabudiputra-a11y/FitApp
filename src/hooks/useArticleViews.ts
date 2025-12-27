@@ -3,19 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 /* ======================
-    METRIC ENGINE 
+    
    ====================== */
 const _0xview = [
     'article_view_counts',      
-    'total_views',               
-    'article_id',                
-    'increment_article_views',   
-    'article_id_input',          
-    'public'                     
+    'total_views',              
+    'article_id',               
+    'increment_article_views',  
+    'article_id_input',         
+    'public'                    
 ] as const;
 
 const _v = (i: number) => _0xview[i] as any;
 
+/**
+ * 
+ * 
+ */
 async function trackPageView(articleId: string, queryClient: any) { 
     if (!articleId) return;
     
@@ -45,6 +49,10 @@ export const useArticleViews = (articleIds: ArticleIdentifiers) => {
         }
     }, [initialViews, articleId]); 
 
+    /**
+     * 
+     * 
+     */
     const { data: fetchedViewCount } = useQuery<number>({
         queryKey: ["viewCount", articleId],
         queryFn: async () => {
@@ -59,7 +67,7 @@ export const useArticleViews = (articleIds: ArticleIdentifiers) => {
         },
         enabled: !!articleId,
         placeholderData: initialViews, 
-        refetchInterval: 5000, 
+        refetchInterval: 10000, 
     });
 
     useEffect(() => {
@@ -68,10 +76,14 @@ export const useArticleViews = (articleIds: ArticleIdentifiers) => {
         }
     }, [fetchedViewCount, liveViewCount]); 
     
+    /**
+     * 
+     * 
+     */
     useEffect(() => {
         if (!articleId) return;
         
-        const channelName = `ev_v1_${articleId}`; // Masked channel name
+        const channelName = `view_sync_${articleId}`; 
 
         const channel = supabase
             .channel(channelName) 
@@ -89,7 +101,6 @@ export const useArticleViews = (articleIds: ArticleIdentifiers) => {
                         const newViews = rec[_v(1)];
                         setLiveViewCount(newViews); 
                         queryClient.setQueryData(["viewCount", articleId], newViews);
-                        queryClient.invalidateQueries({ queryKey: ['articles'] });
                     }
                 }
             )

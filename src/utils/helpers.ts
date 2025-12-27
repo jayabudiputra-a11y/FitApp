@@ -2,7 +2,6 @@ export const LANGS = ["en", "id", "zh", "ja", "ko", "es", "fr", "de", "ru", "ar"
 export type LangCode = (typeof LANGS)[number];
 
 /* ======================
-    SECURE FRAGMENT ENGINE
     
    ====================== */
 const _0xcore = [
@@ -17,7 +16,7 @@ const _0xcore = [
 const _h = (i: number) => _0xcore[i] as any;
 
 const _get_base = () => {
-    const _p = _h(2); 
+    const _p = _h(2);
     const _d = _h(1); 
     const _s = _h(0); 
     return `${_s}${_p}${_d}`;
@@ -26,7 +25,7 @@ const _get_base = () => {
 export const cleanAndValidateUrl = (url: string): string => {
     if (!url) return "";
     const trimmedUrl = url.trim();
-
+    
     if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
         return "";
     }
@@ -43,34 +42,18 @@ export const cleanAndValidateUrl = (url: string): string => {
         urlObj.pathname = encodedPath;
         return urlObj.toString();
     } catch (e) {
-        if (import.meta.env.DEV) console.error("X_FAULT: Link encoding failed.");
         return "";
     }
 };
 
-export const getLowQualityUrl = (url: string): string => {
-    const cleanedUrl = cleanAndValidateUrl(url);
-    if (!cleanedUrl) return "";
-
-    try {
-        const urlObj = new URL(cleanedUrl);
-        urlObj.searchParams.set('quality', 'low');
-        urlObj.searchParams.set('format', 'webp');
-        return urlObj.toString();
-    } catch (e) {
-        return cleanedUrl;
-    }
-};
-
-/**
- * GENERATE FULL IMAGE URL
- * 
- */
 export const generateFullImageUrl = (relativePath: string): string => {
     if (!relativePath) return '';
     
+    if (relativePath.startsWith('http')) {
+        return cleanAndValidateUrl(relativePath);
+    }
+
     const cleanPath = relativePath.trim().replace(/[, ]+$/, '');
-    
     const _B = _get_base();
     const fullUrl = `${_B}${cleanPath}`;
     

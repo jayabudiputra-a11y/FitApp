@@ -46,7 +46,7 @@ export default function ArticleCard({ article, priority = false }: ArticleCardPr
         to={`/article/${article.slug}`}
         className="flex flex-row items-center gap-4 md:gap-8 outline-none relative z-10"
       >
-        {/* IMAGE CONTAINER DENGAN SINKRONISASI HOVER */}
+        {/*  */}
         <div className="relative flex-shrink-0 w-[110px] h-[110px] md:w-[200px] md:h-[130px] overflow-hidden bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-transparent group-hover:border-yellow-400/50 transition-colors duration-500">
           {displayUrl ? (
             <img
@@ -63,17 +63,17 @@ export default function ArticleCard({ article, priority = false }: ArticleCardPr
             </div>
           )}
 
-          {/* GRADIENT BAR SINKRON DENGAN TEMA 2000an */}
+          {/*  */}
           <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_10px_#facc15]" />
         </div>
 
         <div className="flex flex-col flex-1 min-w-0">
-          {/* CATEGORY TAG */}
+          {/*  */}
           <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 text-[#00a354] group-hover:text-yellow-500 transition-colors duration-300">
             {article.category || "FITAPP SELECTION"}
           </span>
 
-          {/* JUDUL DENGAN EFEK MOTION (SINKRON DENGAN LASSO) */}
+          {/*  */}
           <motion.h2 
             className="text-[17px] md:text-[22px] leading-[1.2] font-black uppercase tracking-tighter text-black dark:text-white line-clamp-2 mb-2 transition-all duration-300"
             variants={{
@@ -105,7 +105,7 @@ export default function ArticleCard({ article, priority = false }: ArticleCardPr
         </div>
       </Link>
 
-      {/* BACKGROUND FLASH GLOW (EFEX RAHASIA 2000-an) */}
+      {/*  */}
       <div className="absolute inset-0 bg-yellow-400/0 group-hover:bg-yellow-400/[0.02] pointer-events-none transition-colors duration-500" />
     </article>
   );

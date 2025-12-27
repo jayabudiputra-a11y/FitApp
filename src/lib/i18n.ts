@@ -17,6 +17,12 @@ import ar from '../locales/ar/translation.json';
 import th from '../locales/th/translation.json';
 import vi from '../locales/vi/translation.json';
 
+/* ======================
+    
+   ====================== */
+const _0xlang = ["localStorage", "navigator", "htmlTag", "i18nextLng", "en"] as const;
+const _l = (i: number) => _0xlang[i] as string;
+
 const resources = {
   en: { translation: en.translation },
   id: { translation: id.translation },
@@ -39,12 +45,13 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: "en",
+    fallbackLng: _l(4), // "en"
     debug: import.meta.env.DEV,
     interpolation: { escapeValue: false },
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"],
+      order: [_l(0), _l(1), _l(2)], 
+      lookupLocalStorage: _l(3), // Default i18next adalah 'i18nextLng'
+      caches: [_l(0)],
     }
   });
 

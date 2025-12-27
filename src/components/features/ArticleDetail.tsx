@@ -145,6 +145,15 @@ export default function ArticleDetail() {
             {excerpt}
           </p>
 
+          {/* FIX: Move ArticleCoverImage OUTSIDE the loop to ensure it always renders */}
+          <div className="my-10 max-w-[700px] mx-auto text-center">
+            <ArticleCoverImage
+              imageUrl={coverImage}
+              title={title}
+              slug={slugValue}
+            />
+          </div>
+
           <div className="max-w-none">
             {cleanParagraphs.map((line: string, index: number) => {
               const processedLine = line
@@ -153,26 +162,16 @@ export default function ArticleDetail() {
                 .replace(/\*(.*?)\*/g, `<em class="italic">$1</em>`);
 
               return (
-                <div key={index}>
-                  <p
-                    className="text-[18px] md:text-[20px] leading-[1.7] mb-6 font-serif"
-                    dangerouslySetInnerHTML={{ __html: processedLine }}
-                  />
-
-                  {index === 0 && (
-                    <div className="my-10 max-w-[700px] mx-auto text-center">
-                      <ArticleCoverImage
-                        imageUrl={coverImage}
-                        title={title}
-                        slug={slugValue}
-                      />
-                    </div>
-                  )}
-                </div>
+                <p
+                  key={index}
+                  className="text-[18px] md:text-[20px] leading-[1.7] mb-6 font-serif"
+                  dangerouslySetInnerHTML={{ __html: processedLine }}
+                />
               );
             })}
           </div>
 
+          {/* Mid Gallery Section */}
           {midGalleryString && (
             <section className="mt-8 mb-12">
               <ArticleImageGallery
@@ -186,6 +185,7 @@ export default function ArticleDetail() {
             </section>
           )}
 
+          {/* Bottom Gallery Section */}
           {bottomGalleryString && (
             <section className="mt-8 mb-16">
               <ArticleImageGallery
@@ -199,10 +199,6 @@ export default function ArticleDetail() {
             </section>
           )}
 
-          {/* PERBAIKAN SPACING:
-              1. mt-20: Memberikan jarak yang sangat lega setelah galeri terakhir.
-              2. pt-12: Memberikan padding top di dalam border agar teks Discussion tidak menempel ke garis.
-          */}
           <section className="mt-20 border-t border-gray-100 dark:border-neutral-900 pt-12">
             <CommentSection articleId={article.id} />
           </section>

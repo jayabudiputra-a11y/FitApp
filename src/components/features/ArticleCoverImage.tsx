@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // Tambahkan useState
 import Card from '@/components/ui/Card';
 import { getOptimizedImage } from '@/lib/utils';
 import { useSaveData } from '@/hooks/useSaveData'; 
@@ -10,60 +10,52 @@ interface ArticleCoverImageProps {
 }
 
 const ArticleCoverImage: React.FC<ArticleCoverImageProps> = ({ imageUrl, title, slug }) => {
-  const { isEnabled, saveData } = useSaveData(); 
+  const { isEnabled, saveData } = useSaveData();
+  const [isLoaded, setIsLoaded] = useState(false); // State untuk memantau loading
 
-  // Memastikan imageUrl ada dan merupakan string sebelum diolah
-  const safeHighQualityUrl = typeof imageUrl === 'string' 
-    ? imageUrl.split('\r\n')[0].trim() 
-    : null;
+  const safeHighQualityUrl = React.useMemo(() => {
+    if (!imageUrl || typeof imageUrl !== 'string') return null;
+    return imageUrl.split(/[\r\n]+/)[0].trim();
+  }, [imageUrl]);
 
-  if (!safeHighQualityUrl || safeHighQualityUrl.length === 0) {
-    return null;
-  }
+  if (!safeHighQualityUrl) return null;
 
   const isLowQualityMode = isEnabled && saveData.quality === 'low';
-  // Untuk cover utama, 900px adalah standar ketajaman yang baik
-  const targetWidth = isLowQualityMode ? 400 : 900;
-  
+  const targetWidth = isLowQualityMode ? 480 : 900;
   const displayUrl = getOptimizedImage(safeHighQualityUrl, targetWidth);
 
   return (
-    <div className="px-6 pt-6">
-      <Card variant="shadow" className="p-0 overflow-hidden">
+    <div className="px-0 sm:px-6 pt-6">
+      <Card variant="shadow" className="p-0 overflow-hidden border-none shadow-xl dark:shadow-neutral-900/50">
         <a 
           href={safeHighQualityUrl} 
-          download={`fitapp_${slug}_cover.jpg`} 
-          className="block w-full h-full" 
+          className="block w-full h-full cursor-zoom-in" 
           target="_blank" 
           rel="noopener noreferrer"
         >
-          <div className="aspect-[16/9] bg-neutral-100 dark:bg-neutral-800 overflow-hidden animate-pulse">
+          {/*  */}
+          <div className={`aspect-[16/9] bg-neutral-100 dark:bg-neutral-900 overflow-hidden ${!isLoaded ? 'animate-pulse' : ''}`}>
             <img 
               src={displayUrl} 
               alt={title} 
-              className="w-full h-full object-cover !m-0 transition-opacity duration-700 ease-in-out" 
+              className={`w-full h-full object-cover !m-0 transition-opacity duration-700 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
               loading="eager" 
-              // Menggunakan casting 'as any' untuk menghindari error TypeScript 
-              // dan penulisan lowercase 'fetchpriority' agar React tidak memunculkan warning di console
               {...({ fetchpriority: "high" } as any)}
-              // Menambahkan dimensi eksplisit untuk mencegah layout shift (CLS)
               width="900"
               height="506"
-              onLoad={(e) => {
-                e.currentTarget.style.opacity = '1';
-                const parent = e.currentTarget.parentElement;
-                if (parent) parent.classList.remove('animate-pulse');
-              }}
+              onLoad={() => setIsLoaded(true)}
               onError={(e) => {
+                setIsLoaded(true); 
                 e.currentTarget.style.opacity = '0.5';
-                const parent = e.currentTarget.parentElement;
-                if (parent) parent.classList.remove('animate-pulse');
+                e.currentTarget.parentElement?.classList.add('bg-neutral-200');
               }}
-              style={{ opacity: 0 }}
             />
           </div>
         </a>
       </Card>
+      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-600 font-bold text-center">
+        FitApp Visual Content — {slug.replace(/-/g, ' ')}
+      </p>
     </div>
   );
 };
