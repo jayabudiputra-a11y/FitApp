@@ -6,7 +6,6 @@ import IframeA11yFixer from "@/components/common/IframeA11yFixer";
 import ScrollToTopButton from "@/components/features/ScrollToTopButton";
 import type { AuthPageLayoutProps } from "@/types";
 
-// OPTIMASI: Lazy Loading untuk semua halaman utama
 const Home = lazy(() => import("@/pages/Home"));
 const Articles = lazy(() => import("@/pages/Articles"));
 const ArticlePage = lazy(() => import("@/pages/ArticlePage"));
@@ -19,7 +18,6 @@ const Subscription = lazy(() => import("@/pages/Subscription"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
 
-// OPTIMASI: Lazy Loading untuk komponen auth yang cukup berat
 const SignUpForm = lazy(() => import("@/components/SignUpForm"));
 const SignInForm = lazy(() => import("@/components/common/SignInForms"));
 
@@ -48,7 +46,7 @@ function App() {
       <IframeA11yFixer />
       <ScrollToTopButton />
 
-      {/* Suspense membungkus rute agar ada tampilan transisi saat file JS diunduh */}
+      {/*  */}
       <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black" />}>
         <Routes>
           <Route element={<Layout />}>
@@ -89,7 +87,6 @@ function App() {
   );
 }
 
-// Perbaikan nama komponen di route profile agar konsisten
 const ProfilePage = Profile;
 
 export default App;

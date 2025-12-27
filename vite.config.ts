@@ -5,58 +5,73 @@ import Sitemap from "vite-plugin-sitemap";
 
 export default defineConfig({
   plugins: [
-    react(),
-    // Konfigurasi Sitemap
+    react({
+      babel: {
+        compact: true,
+      },
+    }),
+
     Sitemap({
-      hostname: "https://fit-app-eight.vercel.app", // Ganti dengan domain produksi Anda
-      readable: true,
+      hostname: "https://fit-app-eight.vercel.app",
+      readable: false,
       changefreq: "daily",
       priority: 1.0,
-      // Karena ini aplikasi React SPA, kita mendefinisikan rute statis utama
       dynamicRoutes: [
         "/",
         "/signin",
         "/articles",
-        // Catatan: Untuk slug artikel dinamis dari database, 
-        // bot akan menemukannya via internal linking dari halaman utama.
       ],
     }),
   ],
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  define: {
+    __REACT_DEVTOOLS_GLOBAL_HOOK__: "undefined",
+  },
+
   build: {
     outDir: "dist",
-    // 1. AKTIFKAN SOURCEMAP
-    // Menghilangkan peringatan "Missing source maps" di Lighthouse
-    sourcemap: true, 
+    emptyOutDir: true,
+
+    sourcemap: false,
     cssCodeSplit: true,
     cssMinify: true,
-    minify: 'terser', 
+
+    minify: "terser",
     terserOptions: {
       compress: {
+        passes: 3,
         drop_console: true,
         drop_debugger: true,
+        dead_code: true,
+        conditionals: true,
+        booleans: true,
+        unused: true,
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
       },
     },
+
     rollupOptions: {
       output: {
+        entryFileNames: "assets/js/[hash].js",
+        chunkFileNames: "assets/js/[hash].js",
+        assetFileNames: "assets/[hash][extname]",
+
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            // Membagi library besar menjadi file terpisah (Code Splitting)
-            if (id.includes('react')) return 'vendor-react';
-            if (id.includes('lucide-react')) return 'vendor-lucide';
-            if (id.includes('framer-motion')) return 'vendor-animation';
-            if (id.includes('@supabase')) return 'vendor-supabase';
-            if (id.includes('date-fns')) return 'vendor-date';
-            return 'vendor-libs';
+          if (id.includes("node_modules")) {
+            return "x";
           }
         },
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
   },
