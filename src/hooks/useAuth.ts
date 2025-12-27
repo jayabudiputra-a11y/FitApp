@@ -10,10 +10,13 @@ export const useAuth = () => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Menggunakan authApi yang sudah diobfuscate
         const currentUser = await authApi.getCurrentUser();
         setUser(currentUser);
       } catch (error) {
-        console.error("Error fetching initial user:", error);
+        if (import.meta.env.DEV) {
+          console.error("[AUTH_SYNC_ERROR]:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -21,9 +24,10 @@ export const useAuth = () => {
 
     initAuth();
 
+    // Listener untuk perubahan session
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user as AuthUser);
       } else {
@@ -39,10 +43,11 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Konsisten menggunakan authApi untuk logout
+      await authApi.signOut();
       setUser(null);
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("[SIGNOUT_ERROR]:", error);
     }
   };
 

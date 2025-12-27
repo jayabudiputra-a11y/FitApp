@@ -2,20 +2,33 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Theme = "light" | "dark";
-const GUEST_ID_KEY = "fitapp_guest_id";
+
+/* ======================
+    ENGINE
+   ====================== */
+const _0xpref = [
+    'user_preferences', 
+    'user_id',          
+    'theme',            
+    'updated_at',       
+    'fitapp_guest_id'   
+] as const;
+
+const _p = (i: number) => _0xpref[i] as any;
 
 const getGuestId = () => {
-  let guestId = localStorage.getItem(GUEST_ID_KEY);
+  const _G = _p(4);
+  let guestId = localStorage.getItem(_G);
   if (!guestId) {
     guestId = crypto.randomUUID();
-    localStorage.setItem(GUEST_ID_KEY, guestId);
+    localStorage.setItem(_G, guestId);
   }
   return guestId;
 };
 
 export const useThemePreference = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    return (localStorage.getItem("theme") as Theme) || "light";
+    return (localStorage.getItem(_p(2)) as Theme) || "light";
   });
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -32,14 +45,14 @@ export const useThemePreference = () => {
       const identifier = session?.user?.id ?? getGuestId();
       setUserId(identifier);
 
-      const { data } = await supabase
-        .from("user_preferences")
-        .select("theme")
-        .eq("user_id", identifier)
+      // Menggunakan obfuscated table & column name
+      const { data } = await (supabase.from(_p(0)) as any)
+        .select(_p(2))
+        .eq(_p(1), identifier)
         .maybeSingle();
 
-      if (data?.theme && data.theme !== theme) {
-        applyTheme(data.theme as Theme);
+      if (data && data[_p(2)] && data[_p(2)] !== theme) {
+        applyTheme(data[_p(2)] as Theme);
       }
     };
 
@@ -49,7 +62,7 @@ export const useThemePreference = () => {
   const applyTheme = (value: Theme) => {
     setTheme(value);
     document.documentElement.classList.toggle("dark", value === "dark");
-    localStorage.setItem("theme", value);
+    localStorage.setItem(_p(2), value);
   };
 
   const toggleTheme = async () => {
@@ -58,13 +71,13 @@ export const useThemePreference = () => {
 
     if (!userId) return;
 
-    await supabase.from("user_preferences").upsert(
+    await (supabase.from(_p(0)) as any).upsert(
       {
-        user_id: userId,
-        theme: next,
-        updated_at: new Date().toISOString(),
+        [_p(1)]: userId,
+        [_p(2)]: next,
+        [_p(3)]: new Date().toISOString(),
       },
-      { onConflict: "user_id" }
+      { onConflict: _p(1) }
     );
   };
 

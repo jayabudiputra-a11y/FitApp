@@ -2,50 +2,57 @@ import { useMutation } from "@tanstack/react-query";
 import { subscribersApi } from "@/lib/api";
 import { toast } from "sonner";
 
-const LIMIT_KEY = "fitapp_v1_limit";
+/* ======================
+         ENGINE
+   ====================== */
+const _0xlimit = [
+    'fitapp_v1_limit', 
+    'LIMIT_LOCAL',      
+    'Subscriber',       
+    'status'            
+] as const;
+
+const _l = (i: number) => _0xlimit[i] as any;
 
 export const useSubscribe = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      // 1. Check local rate limit (anti-spam protection)
       const now = Date.now();
-      const storage = JSON.parse(localStorage.getItem(LIMIT_KEY) || "[]");
+      const _K = _l(0);
+      const storage = JSON.parse(localStorage.getItem(_K) || "[]");
+      
       const recentAttempts = storage.filter(
         (ts: number) => now - ts < 3600000
       );
 
       if (recentAttempts.length >= 4) {
-        throw new Error("LIMIT_LOCAL");
+        throw new Error(_l(1)); // LIMIT_LOCAL
       }
 
-      // 2. Save to database (upsert)
-      // Use "Subscriber" as default name since no name input exists yet
-      await subscribersApi.insertIfNotExists(email, "Subscriber");
+      await subscribersApi.insertIfNotExists(email, _l(2));
 
-      // 3. Update local limit record
       recentAttempts.push(now);
-      localStorage.setItem(LIMIT_KEY, JSON.stringify(recentAttempts));
+      localStorage.setItem(_K, JSON.stringify(recentAttempts));
 
-      return { status: "success" };
+      return { [_l(3)]: "success" };
     },
     onSuccess: () => {
-      // Aligned with passwordless flow: no email confirmation required
       toast.success("Subscription Successful!", {
-        description: "Your email has been added to our newsletter list.",
+        description: "Your sequence has been bound to our notification node.",
       });
     },
     onError: (error: any) => {
-      if (error.message === "LIMIT_LOCAL") {
-        toast.warning("Too Many Attempts", {
+      if (error.message === _l(1)) {
+        toast.warning("Access Restricted", {
           description:
-            "For security reasons, please try subscribing again in 1 hour.",
+            "Multiple attempts detected. Node locked for 60 minutes for security.",
         });
         return;
       }
 
-      toast.error("Subscription Failed", {
+      toast.error("Transmission Error", {
         description:
-          "This email may already be registered or there was a connection issue.",
+          "The signal could not be processed. Please verify your ID_SEQUENCE.",
       });
     },
   });

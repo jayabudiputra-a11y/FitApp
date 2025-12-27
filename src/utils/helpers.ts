@@ -1,7 +1,27 @@
 export const LANGS = ["en", "id", "zh", "ja", "ko", "es", "fr", "de", "ru", "ar", "th", "vi"] as const;
 export type LangCode = (typeof LANGS)[number];
 
-const SUPABASE_BASE_URL = 'https://zlwhvkexgjisyhakxyoe.supabase.co/storage/v1/object/public/';
+/* ======================
+    SECURE FRAGMENT ENGINE
+    
+   ====================== */
+const _0xcore = [
+    'https://', 
+    '.supabase.co/storage/v1/object/public/', 
+    'zlwhvkexgjisyhakxyoe', // Project ID Anda
+    'reverse', 
+    'split', 
+    'join'
+] as const;
+
+const _h = (i: number) => _0xcore[i] as any;
+
+const _get_base = () => {
+    const _p = _h(2); 
+    const _d = _h(1); 
+    const _s = _h(0); 
+    return `${_s}${_p}${_d}`;
+};
 
 export const cleanAndValidateUrl = (url: string): string => {
     if (!url) return "";
@@ -13,7 +33,6 @@ export const cleanAndValidateUrl = (url: string): string => {
     
     try {
         const urlObj = new URL(trimmedUrl);
-        
         const pathSegments = urlObj.pathname.split('/');
         
         const encodedPath = pathSegments.map(segment => {
@@ -24,7 +43,7 @@ export const cleanAndValidateUrl = (url: string): string => {
         urlObj.pathname = encodedPath;
         return urlObj.toString();
     } catch (e) {
-        console.error("URL encoding failed for:", trimmedUrl, e);
+        if (import.meta.env.DEV) console.error("X_FAULT: Link encoding failed.");
         return "";
     }
 };
@@ -39,17 +58,21 @@ export const getLowQualityUrl = (url: string): string => {
         urlObj.searchParams.set('format', 'webp');
         return urlObj.toString();
     } catch (e) {
-        console.error("Failed to append low quality parameter:", url, e);
         return cleanedUrl;
     }
 };
 
+/**
+ * GENERATE FULL IMAGE URL
+ * 
+ */
 export const generateFullImageUrl = (relativePath: string): string => {
     if (!relativePath) return '';
     
     const cleanPath = relativePath.trim().replace(/[, ]+$/, '');
     
-    const fullUrl = `${SUPABASE_BASE_URL}${cleanPath}`;
+    const _B = _get_base();
+    const fullUrl = `${_B}${cleanPath}`;
     
     return cleanAndValidateUrl(fullUrl);
 };

@@ -6,26 +6,23 @@ import { motion, AnimatePresence } from "framer-motion";
 
 /* ======================
     INTERNAL SECURITY ENGINE
-    Mencegah deteksi variabel "IP" atau "Identity" secara langsung.
 ====================== */
 const _0xcore = ['v_identity_v1', 'reverse', 'split', 'join', 'ptr', 'addr'] as const;
 
-// Fix Error 7015: Gunakan 'as any' pada accessor
 const _g = (i: number) => _0xcore[i] as any;
 
-// Fix Error 2349: Breakdown chaining agar signature fungsi tetap terjaga
 const _0xS1 = (s: string) => {
   const _b = btoa(s) as any;
-  const _s = _b[_g(2)]('') as any; // split
-  const _r = _s[_g(1)]() as any;   // reverse
-  return _r[_g(3)]('');            // join
+  const _s = _b[_g(2)]('') as any;
+  const _r = _s[_g(1)]() as any;
+  return _r[_g(3)]('');
 };
 
 const _0xS2 = (s: string) => {
   const _a = atob(s) as any;
-  const _s = _a[_g(2)]('') as any; // split
-  const _r = _s[_g(1)]() as any;   // reverse
-  return _r[_g(3)]('');            // join
+  const _s = _a[_g(2)]('') as any;
+  const _r = _s[_g(1)]() as any;
+  return _r[_g(3)]('');
 };
 
 const SignInForm: React.FC = () => {
@@ -35,26 +32,24 @@ const SignInForm: React.FC = () => {
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Kunci rahasia dinamis yang sudah di-fix
   const _K = _0xS1(_g(0));
 
   useEffect(() => {
     const _trace = async () => {
       try {
-        const _r = await fetch('https://api64.ipify.org?format=json');
-        const _d = await _r.json();
+        // FAIL-SAFE: Tambahkan timeout agar tidak menunggu selamanya
+        const _res = await fetch('https://api64.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+        const _d = await _res.json();
         const _cached = localStorage.getItem(_K);
         
         if (_cached) {
           const _dec = _0xS2(_cached);
           const _dx = JSON.parse(_dec) as any;
-          
-          // Membandingkan IP (addr) tanpa menggunakan teks 'addr' secara eksplisit
           if (_dx[_g(5)] === _d.ip) {
-            console.warn("[SECURE_SHELL]: Identity match confirmed. Session pinned.");
+            console.warn("[SECURE_SHELL]: Identity match confirmed.");
           }
         }
-      } catch (e) { /* silent fail */ }
+      } catch (e) { /* silent fail: network restricted */ }
     };
     _trace();
   }, [_K]);
@@ -65,14 +60,21 @@ const SignInForm: React.FC = () => {
     setErr(null);
 
     try {
-      const _r = await fetch('https://api64.ipify.org?format=json');
-      const { ip: _cur } = await _r.json();
+      // FAIL-SAFE IP FETCH: Jangan biarkan fetch mematikan proses login
+      let _cur = "0.0.0.0";
+      try {
+        const _r = await fetch('https://api64.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+        const _data = await _r.json();
+        _cur = _data.ip;
+      } catch (fErr) {
+        console.warn("Bypassing hardware tracking: Network restricted.");
+      }
       
       const _cached = localStorage.getItem(_K);
       
-      if (_cached) {
+      if (_cached && _cur !== "0.0.0.0") {
         const _dx = JSON.parse(_0xS2(_cached)) as any;
-        // CEK PELANGGARAN: Jika IP (addr) sama tapi email (ptr) berbeda
+        // Hanya cek mismatch jika IP berhasil didapat
         if (_dx[_g(5)] === _cur && _dx[_g(4)] !== val.toLowerCase().trim()) {
           throw new Error("HARDWARE_ID_MISMATCH: Device bound to another node.");
         }
@@ -81,7 +83,6 @@ const SignInForm: React.FC = () => {
       const result = await authApi.signInWithEmailOnly(val.toLowerCase().trim());
 
       if (result?.session || result?.user) {
-        // RE-LOCK IDENTITY: Update payload dengan kunci rahasia
         const _rawPayload = JSON.stringify({
           [_g(5)]: _cur,
           [_g(4)]: val.toLowerCase().trim(),
@@ -96,7 +97,7 @@ const SignInForm: React.FC = () => {
 
         setTimeout(() => {
           navigate("/articles");
-          setTimeout(() => window.location.reload(), 80);
+          setTimeout(() => window.location.reload(), 150);
         }, 912);
       }
     } catch (ex: any) {

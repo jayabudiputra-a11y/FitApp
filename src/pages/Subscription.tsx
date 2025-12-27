@@ -5,17 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 /**
  * @layer INTERNAL_CORE_OBFUSCATION
- * Mencegah pemetaan statis oleh alat inspeksi otomatis.
  */
-const _0x4c2a = ['pending_subscribe_email', 'v_identity_v1', 'reverse', 'split', 'join'] as const;
+const _0x4c2a = ['pending_subscribe_email', 'v_identity_v1', 'reverse', 'split', 'join', 'ptr'] as const;
 
-// Menghasilkan kunci akses metode secara dinamis
 const _hash = (i: number) => _0x4c2a[i] as any;
 
-/**
- * FIXED LOGIC:
- * Menggunakan (X as any) pada setiap langkah chaining agar TS tidak kehilangan call signature.
- */
 const _0x1f92 = (s: string) => {
   const _b = btoa(s) as any;
   const _s = _b[_hash(3)]('') as any;
@@ -35,7 +29,7 @@ const Subscription = () => {
   const [isDiverging, setIsDiverging] = useState(false);
   const navigate = useNavigate();
 
-  // Kunci dinamis yang tetap konsisten selama sesi komponen
+  // Kunci dinamis
   const _K = useMemo(() => _0x1f92(_hash(1)), []);
   const _E = useMemo(() => _hash(0), []);
 
@@ -45,15 +39,21 @@ const Subscription = () => {
       if (!_cache) return;
       
       try {
-        const _dx = JSON.parse(_0x92f1(_cache));
-        if (_dx && _dx.ptr) {
+        const _decoded = _0x92f1(_cache);
+        const _dx = JSON.parse(_decoded) as any;
+        
+        // Cek apakah ada pointer identitas (email) di dalam cache terenkripsi
+        if (_dx && _dx[_hash(5)]) {
           toast.info('Terminal Active', {
-            description: 'Identity sequence recognized. Relocating...',
+            description: 'Identity sequence recognized. Relocating to access portal...',
           });
           
-          setTimeout(() => navigate('/signin'), 144);
+          // Efek transisi halus ke SignIn
+          setIsDiverging(true);
+          setTimeout(() => navigate('/signin'), 800);
         }
       } catch (e) {
+        // Jika korup, bersihkan
         localStorage.removeItem(_K);
       }
     };
@@ -66,6 +66,7 @@ const Subscription = () => {
     if (!val || val.length < 5) return;
 
     setIsDiverging(true);
+    // Simpan email sementara untuk di-consume oleh SignUpForm
     localStorage.setItem(_E, val.toLowerCase().trim());
 
     toast.success('Sequence Locked', {
@@ -83,9 +84,10 @@ const Subscription = () => {
       {/* SCANLINE OVERLAY */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.04),rgba(0,255,0,0.01),rgba(0,0,255,0.04))] bg-[length:100%_3px,2px_100%]" />
 
-      <AnimatePresence>
-        {!isDiverging && (
+      <AnimatePresence mode="wait">
+        {!isDiverging ? (
           <motion.div
+            key="subscription-node"
             initial={{ opacity: 0, scale: 0.92, rotateY: 8 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             exit={{
@@ -152,6 +154,17 @@ const Subscription = () => {
                 </p>
               </div>
             </form>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center text-center"
+          >
+            <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-6" />
+            <p className="text-emerald-500 font-black uppercase tracking-[0.5em] text-[10px]">
+              Diverging Stream...
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

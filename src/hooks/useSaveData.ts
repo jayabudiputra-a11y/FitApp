@@ -1,43 +1,60 @@
 import { useState, useEffect } from 'react'
 import type { SaveDataPreference } from '../types'
 
+/* ======================
+    BANDWIDTH
+   ====================== */
+const _0xflux = [
+    'saveDataPreference',
+    'low',                
+    'high',               
+    'enabled'             
+] as const;
+
+const _x = (i: number) => _0xflux[i] as any;
+const _KEY_EN = _0xflux[3]; // 'enabled'
+
 export const useSaveData = () => {
   const [saveData, setSaveData] = useState<SaveDataPreference>(() => {
-    const saved = localStorage.getItem('saveDataPreference')
+    const _K = _x(0);
+    const saved = localStorage.getItem(_K);
     return saved
       ? JSON.parse(saved)
-      : { enabled: false, quality: 'high' as const }
-  })
+      : ({ [_KEY_EN]: false, quality: _x(2) } as any as SaveDataPreference);
+  });
 
   useEffect(() => {
-    const connection = (navigator as any).connection
-    const saveDataFromBrowser = connection?.saveData || false
+    const connection = (navigator as any).connection;
+    const isBrowserSaving = connection?.saveData || false;
 
-    if (saveDataFromBrowser && !saveData.enabled) {
-      setSaveData({ enabled: true, quality: 'low' })
+    if (isBrowserSaving && !saveData[_KEY_EN]) {
+      setSaveData({ [_KEY_EN]: true, quality: _x(1) } as any as SaveDataPreference);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('saveDataPreference', JSON.stringify(saveData))
-  }, [saveData])
+    localStorage.setItem(_x(0), JSON.stringify(saveData));
+  }, [saveData]);
 
   const toggleSaveData = () => {
-    setSaveData((prev) => ({
-      ...prev,
-      enabled: !prev.enabled,
-      quality: !prev.enabled ? 'low' : 'high',
-    }))
-  }
+    setSaveData((prev) => {
+      const nextState = !prev[_KEY_EN];
+      return {
+        ...prev,
+        [_KEY_EN]: nextState,
+        quality: nextState ? _x(1) : _x(2),
+      } as any as SaveDataPreference;
+    });
+  };
 
   const setQuality = (quality: 'low' | 'medium' | 'high') => {
-    setSaveData((prev) => ({ ...prev, quality }))
-  }
+    setSaveData((prev) => ({ ...prev, quality }));
+  };
 
   return {
     saveData,
     toggleSaveData,
     setQuality,
-    isEnabled: saveData.enabled,
-  }
+    isEnabled: saveData[_KEY_EN],
+  };
 }

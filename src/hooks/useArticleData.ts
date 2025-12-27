@@ -3,10 +3,16 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
+import { generateFullImageUrl } from "@/utils/helpers"; // Import Helper
 
 import type { LangCode } from "@/utils/helpers"; 
 
-// 1. Definisikan Interface Article di sini dan EXPORT agar bisa dipakai di file lain
+/* ======================
+    ENGINE
+   ====================== */
+const _0xquery = ["articles_denormalized", "slug", "reverse", "split", "join"] as const;
+const _q = (i: number) => _0xquery[i] as any;
+
 export interface Article {
   id: string;
   slug: string;
@@ -27,10 +33,9 @@ export const useArticleData = () => {
     const { data: article, isLoading } = useQuery<Article | null>({ 
         queryKey: ["article", slug],
         queryFn: async () => {
-            const { data } = await supabase
-                .from("articles_denormalized") 
+            const { data } = await (supabase.from(_q(0) as string) as any)
                 .select("*")
-                .eq("slug", slug!)
+                .eq(_q(1) as string, slug!)
                 .maybeSingle();
             return data as Article | null;
         },
@@ -44,22 +49,28 @@ export const useArticleData = () => {
         const langKey = lang === 'en' ? '' : `_${lang}`; 
         
         return articleFields[`${base}${langKey}`] || 
-             articleFields[`${base}_en`] || 
-             articleFields[base];
+               articleFields[`${base}_en`] || 
+               articleFields[base];
     }
 
     const processedData = useMemo(() => {
-        if (!article) {
-            return null;
-        }
+        if (!article) return null;
 
         const title = getField("title") || t("Article Title");
         const excerpt = getField("excerpt") || t("A short excerpt about the article.");
         const content = getField("content") || t("Content not available.");
 
-        const coverImage = article.featured_image_url_clean ?? undefined; 
+        /**
+         * STORAGE:
+         * 
+         * 
+         */
+        const coverImage = article.featured_image_url_clean 
+            ? article.featured_image_url_clean 
+            : article.featured_image_path_clean 
+                ? generateFullImageUrl(article.featured_image_path_clean.split(/[\r\n]+/)[0])
+                : undefined;
         
-        // 2. Tambahkan tipe (path: string) untuk hilangkan error TS7006
         const allPaths: string[] = article.featured_image_path_clean
             ? article.featured_image_path_clean
                 .split(/[\r\n]+/) 
@@ -67,10 +78,9 @@ export const useArticleData = () => {
                 .filter((path: string) => path.length > 0) 
             : [];
         
-        const galleryPaths = allPaths.slice(1); 
+        const galleryPaths = allPaths.slice(1).map(path => generateFullImageUrl(path)); 
         
         const midGallery: string = galleryPaths.slice(0, 5).join('\r\n'); 
-        
         const bottomGallery: string = galleryPaths.slice(5).join('\r\n'); 
 
         const paragraphs = content

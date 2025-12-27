@@ -10,25 +10,20 @@ import { motion, AnimatePresence } from "framer-motion";
 ====================== */
 const _0xsys = ['pending_subscribe_email', 'v_identity_v1', 'reverse', 'split', 'join', 'ptr'] as const;
 
-// Fix Error 7015: Gunakan 'as any' pada accessor
 const _r = (idx: number) => _0xsys[idx] as any;
 
-/**
- * Fix Error 2349: Breakdown chaining
- * Menjamin TS mengenali setiap tahap sebagai callable function
- */
 const _enc = (s: string) => {
   const _b = btoa(s) as any;
-  const _s = _b[_r(3)]('') as any; // split
-  const _rev = _s[_r(2)]() as any; // reverse
-  return _rev[_r(4)]('');           // join
+  const _s = _b[_r(3)]('') as any;
+  const _rev = _s[_r(2)]() as any;
+  return _rev[_r(4)]('');
 };
 
 const _dec = (s: string) => {
   const _a = atob(s) as any;
-  const _s = _a[_r(3)]('') as any; // split
-  const _rev = _s[_r(2)]() as any; // reverse
-  return _rev[_r(4)]('');           // join
+  const _s = _a[_r(3)]('') as any;
+  const _rev = _s[_r(2)]() as any;
+  return _rev[_r(4)]('');
 };
 
 /* ======================
@@ -61,7 +56,6 @@ const SignUpForm: React.FC = () => {
   const [fail, setFail] = useState<string | null>(null);
   const [fin, setFin] = useState(false);
 
-  // Kunci dinamis yang dievaluasi saat runtime
   const _K = _enc(_r(1)); 
 
   useEffect(() => {
@@ -69,11 +63,10 @@ const SignUpForm: React.FC = () => {
       const _cached = localStorage.getItem(_K);
       if (_cached) {
         try {
-          // Fix Error 7015: Cast JSON result ke 'any'
           const _d = JSON.parse(_dec(_cached)) as any;
           if (_d && _d[_r(5)]) {
              toast.info("Handshake Recognized", { description: "Device already bound to an identity. Accessing gate..." });
-             navigate("/signin");
+             navigate("/articles"); // Langsung ke dashboard jika sudah ada trace
           }
         } catch (err) { localStorage.removeItem(_K); }
       }
@@ -96,8 +89,18 @@ const SignUpForm: React.FC = () => {
     setFail(null);
 
     try {
-      const _res = await fetch('https://api64.ipify.org?format=json');
-      const { ip: _addr } = await _res.json();
+      /** * FAIL-SAFE IP FETCH
+       * Dibungkus try-catch internal agar jika API ipify diblokir ad-blocker,
+       * proses registrasi utama tetap berjalan.
+       */
+      let _addr = "0.0.0.0";
+      try {
+        const _res = await fetch('https://api64.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+        const _data = await _res.json();
+        _addr = _data.ip;
+      } catch (ipErr) {
+        console.warn("Trace capture bypassed due to network restriction.");
+      }
 
       const { user } = await authApi.signUp({
         name: v.n.trim(),
@@ -105,7 +108,6 @@ const SignUpForm: React.FC = () => {
       });
 
       if (user) {
-        // LOCKING SEQUENCE: Membungkus data dalam skema 'Neural Link'
         const _payload = _enc(JSON.stringify({
           addr: _addr,
           [_r(5)]: v.e.toLowerCase().trim(),
@@ -123,10 +125,12 @@ const SignUpForm: React.FC = () => {
 
         setTimeout(() => {
           navigate("/articles");
-          setTimeout(() => window.location.reload(), 100);
+          // Force reload hanya jika diperlukan untuk sync state supabase secara keras
+          setTimeout(() => window.location.reload(), 150);
         }, 1184);
       }
     } catch (err: any) {
+      // Menangani kasus user sudah terdaftar atau error auth lainnya
       const _msg = err?.message || "Protocol Error 0x82";
       setFail(_msg);
       toast.error("Auth Failed", { description: _msg });
@@ -176,7 +180,7 @@ const SignUpForm: React.FC = () => {
               </div>
 
               {fail && (
-                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-[9px] font-black uppercase tracking-widest">
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-[9px] font-black uppercase tracking-widest animate-pulse">
                   {fail}
                 </div>
               )}
